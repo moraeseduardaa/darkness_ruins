@@ -9,10 +9,10 @@ class Fase4 extends Phaser.Scene {
     this.load.image('lina', 'assets/Personagens/lina.png');
     this.load.image('ghorn', 'assets/Personagens/ghorn.png');
     this.load.image('mapa_labirinto', 'assets/Mapas/mapa_labirinto.png');
-    this.load.spritesheet('lina_frente', 'assets/Sprites/lina andando de frente-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
-    this.load.spritesheet('lina_costas', 'assets/Sprites/lina andando costas-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
-    this.load.spritesheet('lina_direita', 'assets/Sprites/lina andando direita-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
-    this.load.spritesheet('lina_esquerda', 'assets/Sprites/lina andando esquerda-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
+    this.load.spritesheet('lina_frente', 'assets/Sprites/lina/lina andando de frente-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
+    this.load.spritesheet('lina_costas', 'assets/Sprites/lina/lina andando costas-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
+    this.load.spritesheet('lina_direita', 'assets/Sprites/lina/lina andando direita-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
+    this.load.spritesheet('lina_esquerda', 'assets/Sprites/lina/lina andando esquerda-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
   }
 
   create() {
