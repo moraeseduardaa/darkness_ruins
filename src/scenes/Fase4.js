@@ -9,6 +9,7 @@ class Fase4 extends Phaser.Scene {
     this.load.image('lina', 'assets/Personagens/lina.png');
     this.load.image('ghorn', 'assets/Personagens/ghorn.png');
     this.load.image('mapa_labirinto', 'assets/Mapas/mapa_labirinto.png');
+    this.load.image('coracoes', 'assets/Personagens/hud_coracoes.png');
     this.load.spritesheet('lina_frente', 'assets/Sprites/lina/lina andando de frente-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
     this.load.spritesheet('lina_costas', 'assets/Sprites/lina/lina andando costas-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
     this.load.spritesheet('lina_direita', 'assets/Sprites/lina/lina andando direita-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
@@ -16,106 +17,92 @@ class Fase4 extends Phaser.Scene {
   }
 
   create() {
-    const centerX = this.cameras.main.width / 2;
-    const centerY = this.cameras.main.height / 2;
+    document.body.style.overflow = 'hidden';
+    this.scale.resize(window.innerWidth, window.innerHeight);
+    const largura = this.sys.game.canvas.width;
+    const altura = this.sys.game.canvas.height;
 
-    // Fundo do labirinto
-    this.add.image(centerX, centerY, 'mapa_labirinto')
-      .setDepth(-1)
-      .setOrigin(0.5)
-      .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
+    this.fundo = this.add.image(largura / 2, altura / 2, 'mapa_labirinto').setDepth(-2);
+    this.fundo.setDisplaySize(largura, altura);
 
-    // Título da fase
-    this.add.text(centerX - 150, 50, 'Fase Final - Labirinto das Ruínas', {
-      fontSize: '20px',
-      color: '#ff6666',
-    });
+    const fundoEscuro = this.add.rectangle(largura / 2, altura / 2, largura, altura, 0x000000, 0.8);
+    fundoEscuro.setDepth(-1);
 
-    // Lina com corpo físico e tamanho padronizado
-    this.lina = this.physics.add.sprite(centerX, centerY + 100, 'lina_frente', 0).setScale(2);
-    this.lina.setCollideWorldBounds(true);
-    this.lina.setImmovable(true);
+    const imagemIntro = this.add.image(largura / 2, altura / 2 - 50, 'ghorn');
+    imagemIntro.setScale(0.25);
+    imagemIntro.setDepth(0);
 
-    // Animações da Lina
-    this.anims.create({ key: 'andar_frente', frames: this.anims.generateFrameNumbers('lina_frente', { start: 0, end: 3 }), frameRate: 8, repeat: -1 });
-    this.anims.create({ key: 'andar_costas', frames: this.anims.generateFrameNumbers('lina_costas', { start: 0, end: 3 }), frameRate: 8, repeat: -1 });
-    this.anims.create({ key: 'andar_direita', frames: this.anims.generateFrameNumbers('lina_direita', { start: 0, end: 3 }), frameRate: 8, repeat: -1 });
-    this.anims.create({ key: 'andar_esquerda', frames: this.anims.generateFrameNumbers('lina_esquerda', { start: 0, end: 3 }), frameRate: 8, repeat: -1 });
+    const textoIntro = this.add.text(largura / 2, altura / 2 + 100, 'Derrote Ghorn e salve a ilha!', {
+      fontSize: '24px',
+      color: '#ff4444',
+      fontStyle: 'bold',
+    }).setOrigin(0.5);
+    textoIntro.setDepth(0);
 
-    // Ghorn aparece por alguns segundos
-    const bossIntro = this.add.image(centerX, centerY, 'ghorn').setScale(0.23);
-    this.tweens.add({
-      targets: bossIntro,
-      alpha: { from: 0.6, to: 1 },
-      duration: 500,
-      yoyo: true,
-      repeat: -1,
-    });
-
-    // Após 3 segundos, remove a imagem e cria o boss físico
     this.time.delayedCall(3000, () => {
-      bossIntro.destroy();
-      this.ghorn = this.physics.add.sprite(centerX, centerY, 'ghorn').setScale(0.23);
-      this.ghorn.vida = 100;
-      this.ghorn.setImmovable(true);
-      this.ghorn.setCollideWorldBounds(true);
-      this.ghorn.barraVida = this.add.graphics();
-      // Colisão com Lina
-      this.physics.add.collider(this.lina, this.ghorn, () => {
-        const now = this.time.now;
-        if (!this.ghorn.lastAttackTime || now - this.ghorn.lastAttackTime > 1000) {
-          // Dano na Lina
-          this.lina.setTint(0xff0000);
-          this.time.delayedCall(200, () => this.lina.clearTint());
-          this.ghorn.lastAttackTime = now;
-        }
-      }, null, this);
+      fundoEscuro.destroy();
+      imagemIntro.destroy();
+      textoIntro.destroy();
+      this.iniciarFase();
     });
 
-    // Texto explicativo
-    this.add.text(centerX - 160, centerY + 200, 'Derrote Ghorn e salve a ilha!\nAperte ENTER para ver os créditos.', {
-      fontSize: '16px',
-      color: '#ffffff',
-    });
-
-    // Teclas
     this.teclas = this.input.keyboard.addKeys({
       cima: 'W',
       baixo: 'S',
       esquerda: 'A',
       direita: 'D',
-      atacar: 'SPACE',
+      atacar: 'SPACE'
+    });
+
+    window.addEventListener('resize', () => {
+      this.scale.resize(window.innerWidth, window.innerHeight);
+      const novaLargura = this.sys.game.canvas.width;
+      const novaAltura = this.sys.game.canvas.height;
+      this.fundo.setDisplaySize(novaLargura, novaAltura);
     });
   }
 
+  iniciarFase() {
+    const largura = this.sys.game.canvas.width;
+    const altura = this.sys.game.canvas.height;
+
+    this.lina = this.physics.add.sprite(largura / 2, altura / 2 + 100, 'lina_frente', 0).setScale(2);
+    this.lina.setCollideWorldBounds(true);
+
+    this.anims.create({ key: 'andar_frente', frames: this.anims.generateFrameNumbers('lina_frente', { start: 0, end: 3 }), frameRate: 8, repeat: -1 });
+    this.anims.create({ key: 'andar_costas', frames: this.anims.generateFrameNumbers('lina_costas', { start: 0, end: 3 }), frameRate: 8, repeat: -1 });
+    this.anims.create({ key: 'andar_direita', frames: this.anims.generateFrameNumbers('lina_direita', { start: 0, end: 3 }), frameRate: 8, repeat: -1 });
+    this.anims.create({ key: 'andar_esquerda', frames: this.anims.generateFrameNumbers('lina_esquerda', { start: 0, end: 3 }), frameRate: 8, repeat: -1 });
+  }
+
   update() {
-    const speed = 2;
-    const { cima, baixo, esquerda, direita, avancar } = this.teclas;
+    if (!this.lina) return;
 
-    // Movimento da Lina
-    if (cima.isDown) {
-      this.lina.setVelocityY(-speed);
-      this.lina.anims.play('andar_costas', true);
-    } else if (baixo.isDown) {
-      this.lina.setVelocityY(speed);
-      this.lina.anims.play('andar_frente', true);
-    } else {
-      this.lina.setVelocityY(0);
+    const velocidade = 200;
+    let vx = 0;
+    let vy = 0;
+    let animacao = null;
+
+    if (this.teclas.cima.isDown) {
+      vy = -velocidade;
+      animacao = 'andar_costas';
+    } else if (this.teclas.baixo.isDown) {
+      vy = velocidade;
+      animacao = 'andar_frente';
+    } else if (this.teclas.direita.isDown) {
+      vx = velocidade;
+      animacao = 'andar_direita';
+    } else if (this.teclas.esquerda.isDown) {
+      vx = -velocidade;
+      animacao = 'andar_esquerda';
     }
 
-    if (esquerda.isDown) {
-      this.lina.setVelocityX(-speed);
-      this.lina.anims.play('andar_esquerda', true);
-    } else if (direita.isDown) {
-      this.lina.setVelocityX(speed);
-      this.lina.anims.play('andar_direita', true);
-    } else {
-      this.lina.setVelocityX(0);
-    }
+    this.lina.setVelocity(vx, vy);
 
-    // Transição para créditos
-    if (Phaser.Input.Keyboard.JustDown(avancar)) {
-      this.scene.start('Creditos');
+    if (animacao) {
+      this.lina.anims.play(animacao, true);
+    } else {
+      this.lina.anims.stop();
     }
   }
 }

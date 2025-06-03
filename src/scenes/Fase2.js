@@ -76,7 +76,6 @@ class Fase2 extends Phaser.Scene {
       atacar: 'SPACE',
     });
 
-    // Redimensionar janela
     window.addEventListener('resize', () => {
       this.scale.resize(window.innerWidth, window.innerHeight);
       const w = this.sys.game.canvas.width;
@@ -107,7 +106,7 @@ class Fase2 extends Phaser.Scene {
       this.physics.add.collider(this.lina, ogro, () => {
         const now = this.time.now;
         if (now - ogro.lastAttackTime > 1000 && this.vida > 0) {
-          this.vida -= 5;
+          this.vida -= 10; // Dano reduzido de 20 para 10
           this.atualizarCoracoes();
           this.lina.setTint(0xff0000);
           this.time.delayedCall(200, () => this.lina.clearTint());
@@ -154,7 +153,6 @@ class Fase2 extends Phaser.Scene {
       this.lina.setScale(2);
       this.time.delayedCall(150, () => {
         this.lina.setScale(2);
-        this.lina.clearTint();
       });
 
       this.ogros.forEach(ogro => {
