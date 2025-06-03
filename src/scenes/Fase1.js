@@ -6,14 +6,13 @@ class Fase1 extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('npc_inicio', '/assets/Personagens/npc_inicio.png');
-    this.load.image('vilao1', '/assets/Personagens/vilao1.png');
-    this.load.image('mapa_vilarejo', '/assets/Mapas/mapa_vilarejo.png');
-    this.load.image('coracoes', '/assets/Personagens/hud_coracoes.png');
-    this.load.spritesheet('lina_frente', '/assets/Sprites/lina andando de frente-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
-    this.load.spritesheet('lina_costas', '/assets/Sprites/lina andando costas-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
-    this.load.spritesheet('lina_direita', '/assets/Sprites/lina andando direita-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
-    this.load.spritesheet('lina_esquerda', '/assets/Sprites/lina andando esquerda-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
+    this.load.image('npc_inicio', 'assets/Personagens/npc_inicio.png');    this.load.image('vilao1', 'assets/Personagens/vilao1.png');
+    this.load.image('mapa_vilarejo', 'assets/Mapas/mapa_vilarejo.png');
+    this.load.image('coracoes', 'assets/Personagens/hud_coracoes.png');
+    this.load.spritesheet('lina_frente', 'assets/Sprites/lina andando de frente-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
+    this.load.spritesheet('lina_costas', 'assets/Sprites/lina andando costas-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
+    this.load.spritesheet('lina_direita', 'assets/Sprites/lina andando direita-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
+    this.load.spritesheet('lina_esquerda', 'assets/Sprites/lina andando esquerda-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
   }
 
   create() {
@@ -62,7 +61,6 @@ class Fase1 extends Phaser.Scene {
       esquerda: 'A',
       direita: 'D',
       atacar: 'SPACE',
-      avancar: 'ENTER',
     });
 
     // Ogros
@@ -89,7 +87,6 @@ class Fase1 extends Phaser.Scene {
       }
     ).setDepth(2);
 
-    // Redimensionar janela
     window.addEventListener('resize', () => {
       this.scale.resize(window.innerWidth, window.innerHeight);
       const w = this.sys.game.canvas.width;
@@ -110,7 +107,7 @@ class Fase1 extends Phaser.Scene {
 
     for (let i = 0; i < qtd && this.spawnIndex < this.spawnOffsets.length; i++) {
       const [dx, dy] = this.spawnOffsets[this.spawnIndex];
-      const ogro = this.physics.add.image(width / 2 + dx, height / 2 + dy, 'vilao1').setScale(0.11);
+      const ogro = this.physics.add.sprite(width / 2 + dx, height / 2 + dy, 'vilao1').setScale(0.11);
       ogro.vida = 25;
       ogro.setImmovable(true);
       ogro.setPushable(false); 
@@ -137,7 +134,7 @@ class Fase1 extends Phaser.Scene {
   }
 
   update() {
-    const speed = 200; // velocidade aumentada
+    const speed = 200; 
     const { cima, baixo, esquerda, direita, atacar, avancar } = this.teclas;
     let moving = false;
     this.lina.body.setVelocity(0);
@@ -168,7 +165,6 @@ class Fase1 extends Phaser.Scene {
     // Ataque
     if (Phaser.Input.Keyboard.JustDown(atacar)) {
       this.lina.setScale(2);
-      this.lina.setTint(0xffaaaa);
       this.time.delayedCall(150, () => {
         this.lina.setScale(2);
         this.lina.clearTint();
@@ -186,7 +182,7 @@ class Fase1 extends Phaser.Scene {
       });
     }
 
-    // Barra de vida dos ogros
+    // Barra de vida do ogro
     this.ogros.forEach(ogro => {
       if (ogro.active) {
         this.physics.moveToObject(ogro, this.lina, 25);

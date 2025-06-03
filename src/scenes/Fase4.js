@@ -6,9 +6,13 @@ class Fase4 extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('lina', '/assets/Personagens/lina.png');
-    this.load.image('ghorn', '/assets/Personagens/ghorn.png');
-    this.load.image('mapa_labirinto', '/assets/Mapas/mapa_labirinto.png');
+    this.load.image('lina', 'assets/Personagens/lina.png');
+    this.load.image('ghorn', 'assets/Personagens/ghorn.png');
+    this.load.image('mapa_labirinto', 'assets/Mapas/mapa_labirinto.png');
+    this.load.spritesheet('lina_frente', 'assets/Sprites/lina andando de frente-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
+    this.load.spritesheet('lina_costas', 'assets/Sprites/lina andando costas-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
+    this.load.spritesheet('lina_direita', 'assets/Sprites/lina andando direita-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
+    this.load.spritesheet('lina_esquerda', 'assets/Sprites/lina andando esquerda-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
   }
 
   create() {
@@ -28,16 +32,44 @@ class Fase4 extends Phaser.Scene {
     });
 
     // Lina com corpo físico e tamanho padronizado
-    this.lina = this.physics.add.image(centerX, centerY + 100, 'lina').setScale(0.13);
+    this.lina = this.physics.add.sprite(centerX, centerY + 100, 'lina_frente', 0).setScale(2);
+    this.lina.setCollideWorldBounds(true);
+    this.lina.setImmovable(true);
 
-    // Boss Ghorn com animação de brilho
-    const boss = this.add.image(centerX, centerY, 'ghorn').setScale(0.23);
+    // Animações da Lina
+    this.anims.create({ key: 'andar_frente', frames: this.anims.generateFrameNumbers('lina_frente', { start: 0, end: 3 }), frameRate: 8, repeat: -1 });
+    this.anims.create({ key: 'andar_costas', frames: this.anims.generateFrameNumbers('lina_costas', { start: 0, end: 3 }), frameRate: 8, repeat: -1 });
+    this.anims.create({ key: 'andar_direita', frames: this.anims.generateFrameNumbers('lina_direita', { start: 0, end: 3 }), frameRate: 8, repeat: -1 });
+    this.anims.create({ key: 'andar_esquerda', frames: this.anims.generateFrameNumbers('lina_esquerda', { start: 0, end: 3 }), frameRate: 8, repeat: -1 });
+
+    // Ghorn aparece por alguns segundos
+    const bossIntro = this.add.image(centerX, centerY, 'ghorn').setScale(0.23);
     this.tweens.add({
-      targets: boss,
+      targets: bossIntro,
       alpha: { from: 0.6, to: 1 },
       duration: 500,
       yoyo: true,
       repeat: -1,
+    });
+
+    // Após 3 segundos, remove a imagem e cria o boss físico
+    this.time.delayedCall(3000, () => {
+      bossIntro.destroy();
+      this.ghorn = this.physics.add.sprite(centerX, centerY, 'ghorn').setScale(0.23);
+      this.ghorn.vida = 100;
+      this.ghorn.setImmovable(true);
+      this.ghorn.setCollideWorldBounds(true);
+      this.ghorn.barraVida = this.add.graphics();
+      // Colisão com Lina
+      this.physics.add.collider(this.lina, this.ghorn, () => {
+        const now = this.time.now;
+        if (!this.ghorn.lastAttackTime || now - this.ghorn.lastAttackTime > 1000) {
+          // Dano na Lina
+          this.lina.setTint(0xff0000);
+          this.time.delayedCall(200, () => this.lina.clearTint());
+          this.ghorn.lastAttackTime = now;
+        }
+      }, null, this);
     });
 
     // Texto explicativo
@@ -52,7 +84,7 @@ class Fase4 extends Phaser.Scene {
       baixo: 'S',
       esquerda: 'A',
       direita: 'D',
-      avancar: 'ENTER',
+      atacar: 'SPACE',
     });
   }
 
@@ -61,10 +93,25 @@ class Fase4 extends Phaser.Scene {
     const { cima, baixo, esquerda, direita, avancar } = this.teclas;
 
     // Movimento da Lina
-    if (cima.isDown) this.lina.y -= speed;
-    if (baixo.isDown) this.lina.y += speed;
-    if (esquerda.isDown) this.lina.x -= speed;
-    if (direita.isDown) this.lina.x += speed;
+    if (cima.isDown) {
+      this.lina.setVelocityY(-speed);
+      this.lina.anims.play('andar_costas', true);
+    } else if (baixo.isDown) {
+      this.lina.setVelocityY(speed);
+      this.lina.anims.play('andar_frente', true);
+    } else {
+      this.lina.setVelocityY(0);
+    }
+
+    if (esquerda.isDown) {
+      this.lina.setVelocityX(-speed);
+      this.lina.anims.play('andar_esquerda', true);
+    } else if (direita.isDown) {
+      this.lina.setVelocityX(speed);
+      this.lina.anims.play('andar_direita', true);
+    } else {
+      this.lina.setVelocityX(0);
+    }
 
     // Transição para créditos
     if (Phaser.Input.Keyboard.JustDown(avancar)) {

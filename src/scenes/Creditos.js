@@ -6,13 +6,19 @@ class Creditos extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('creditos_final', '/assets/creditos_final.png'); // ajuste se o arquivo estiver em outra subpasta
+    this.load.image('creditos_final', 'assets/Creditos/creditos_finais.png');
   }
 
   create() {
-    this.add.image(400, 300, 'creditos_final').setScale(0.8);
+    const { width, height } = this.sys.game.canvas;
 
-    const texto = this.add.text(400, 500, `Parabéns, herói(a)!\nVocê salvou a ilha da escuridão eterna!
+    const fundo = this.add.image(width / 2, height / 2, 'creditos_final');
+    fundo.setScale(Math.max(width / fundo.width, height / fundo.height)).setDepth(-1);
+
+    // Texto dos créditos
+    const texto = this.add.text(width / 2, height + 100, `
+Parabéns, herói(a)!
+Você salvou a ilha da escuridão eterna!
 
 Este jogo foi criado com coragem, café e criatividade por:
 
@@ -21,18 +27,30 @@ Gabrielly Rossi Araujo
 Johan Gabriel da Silva dos Santos
 Jose Armando Ventura
 Mariana Moreira Lima
-Pietra Rolim Mendes`, {
-      fontSize: '16px',
+Pietra Rolim Mendes
+`, {
+      fontSize: '24px',
       color: '#ffffff',
       align: 'center',
+      fontFamily: 'Georgia, serif',
+      wordWrap: { width: width * 0.8 }
     }).setOrigin(0.5);
 
-    // Faz os créditos subirem como no cinema
+    // Animação
     this.tweens.add({
       targets: texto,
-      y: -200,
-      duration: 10000,
+      y: -300,
+      duration: 15000,
       ease: 'Linear'
+    });
+
+    // Fade in suave no texto
+    texto.alpha = 0;
+    this.tweens.add({
+      targets: texto,
+      alpha: 1,
+      duration: 3000,
+      ease: 'Power2'
     });
   }
 }

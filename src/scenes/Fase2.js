@@ -6,13 +6,14 @@ class Fase2 extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('vilao1', '/assets/Personagens/vilao1.png');
-    this.load.image('mapa_caverna', '/assets/Mapas/mapa_caverna.png');
-    this.load.image('coracoes', '/assets/Personagens/hud_coracoes.png');
-    this.load.spritesheet('lina_frente', '/assets/Sprites/lina andando de frente-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
-    this.load.spritesheet('lina_costas', '/assets/Sprites/lina andando costas-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
-    this.load.spritesheet('lina_direita', '/assets/Sprites/lina andando direita-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
-    this.load.spritesheet('lina_esquerda', '/assets/Sprites/lina andando esquerda-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
+    this.load.image('lina', 'assets/Personagens/lina.png');
+    this.load.image('vilao1', 'assets/Personagens/vilao1.png');
+    this.load.image('mapa_caverna', 'assets/Mapas/mapa_caverna.png');
+    this.load.image('coracoes', 'assets/Personagens/hud_coracoes.png');
+    this.load.spritesheet('lina_frente', 'assets/Sprites/lina andando de frente-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
+    this.load.spritesheet('lina_costas', 'assets/Sprites/lina andando costas-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
+    this.load.spritesheet('lina_direita', 'assets/Sprites/lina andando direita-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
+    this.load.spritesheet('lina_esquerda', 'assets/Sprites/lina andando esquerda-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
   }
 
   create() {
@@ -73,7 +74,6 @@ class Fase2 extends Phaser.Scene {
       esquerda: 'A',
       direita: 'D',
       atacar: 'SPACE',
-      avancar: 'ENTER',
     });
 
     // Redimensionar janela
@@ -152,7 +152,6 @@ class Fase2 extends Phaser.Scene {
     // Ataque
     if (Phaser.Input.Keyboard.JustDown(atacar)) {
       this.lina.setScale(2);
-      this.lina.setTint(0xffaaaa);
       this.time.delayedCall(150, () => {
         this.lina.setScale(2);
         this.lina.clearTint();
@@ -170,7 +169,7 @@ class Fase2 extends Phaser.Scene {
       });
     }
 
-    // Barra de vida dos ogros
+    // Barra de vida
     this.ogros.forEach(ogro => {
       if (ogro.active) {
         this.physics.moveToObject(ogro, this.lina, 25);
