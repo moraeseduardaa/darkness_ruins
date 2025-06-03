@@ -69,6 +69,49 @@ class Fase4 extends Phaser.Scene {
     this.lina = this.physics.add.sprite(largura / 2, altura / 2 + 100, 'lina_frente', 0).setScale(2);
     this.lina.setCollideWorldBounds(true);
 
+    // Ghorn
+    this.ghorn = this.physics.add.sprite(largura / 2, altura / 2 - 100, 'ghorn').setScale(0.18);
+    this.ghorn.vida = 100;
+    this.ghorn.setImmovable(true); 
+    this.ghorn.setCollideWorldBounds(true);
+    this.ghorn.body.checkCollision.none = true; 
+    this.ghorn.barraVida = this.add.graphics();
+    this.ghorn.lastAttackTime = 0;
+    this.ghorn.speed = 20; 
+
+    // Ataque do Ghorn
+    this.physics.add.overlap(this.lina, this.ghorn, () => {
+      const now = this.time.now;
+      if (now - this.ghorn.lastAttackTime > 1000 && (!this.lina.morta)) {
+        if (!this.lina.vida) this.lina.vida = 100;
+        this.lina.vida -= 25;
+        this.lina.setTint(0xff0000);
+        this.time.delayedCall(200, () => this.lina.clearTint());
+        this.ghorn.lastAttackTime = now;
+        if (this.lina.vida <= 0) {
+          this.lina.morta = true;
+          this.scene.restart();
+        }
+      }
+    }, null, this);
+
+    // Barra de vida do Ghorn
+    this.ghorn.atualizarBarraVida = () => {
+      const barraX = this.ghorn.x - 40;
+      const barraY = this.ghorn.y - this.ghorn.displayHeight / 2 - 16;
+      const larguraBarra = 80;
+      const alturaBarra = 10;
+      const vida = Math.max(this.ghorn.vida, 0);
+      const proporcao = vida / 100;
+      this.ghorn.barraVida.clear();
+      this.ghorn.barraVida.fillStyle(0x000000);
+      this.ghorn.barraVida.fillRect(barraX, barraY, larguraBarra, alturaBarra);
+      this.ghorn.barraVida.fillStyle(0xff0000);
+      this.ghorn.barraVida.fillRect(barraX + 1, barraY + 1, (larguraBarra - 2) * proporcao, alturaBarra - 2);
+      this.ghorn.barraVida.setDepth(2);
+    };
+
+    // Animações da Lina
     this.anims.create({ key: 'andar_frente', frames: this.anims.generateFrameNumbers('lina_frente', { start: 0, end: 3 }), frameRate: 8, repeat: -1 });
     this.anims.create({ key: 'andar_costas', frames: this.anims.generateFrameNumbers('lina_costas', { start: 0, end: 3 }), frameRate: 8, repeat: -1 });
     this.anims.create({ key: 'andar_direita', frames: this.anims.generateFrameNumbers('lina_direita', { start: 0, end: 3 }), frameRate: 8, repeat: -1 });
@@ -98,11 +141,35 @@ class Fase4 extends Phaser.Scene {
     }
 
     this.lina.setVelocity(vx, vy);
-
     if (animacao) {
       this.lina.anims.play(animacao, true);
     } else {
       this.lina.anims.stop();
+    }
+
+    // Movimento do Ghorn
+    if (this.ghorn && this.lina && !this.lina.morta) {
+      const distancia = Phaser.Math.Distance.Between(this.ghorn.x, this.ghorn.y, this.lina.x, this.lina.y);
+      if (distancia > 5) {
+        this.physics.moveToObject(this.ghorn, this.lina, this.ghorn.speed);
+      } else {
+        this.ghorn.setVelocity(0, 0);
+      }
+      this.ghorn.atualizarBarraVida();
+    }
+
+    // Ataque da Lina
+    if (Phaser.Input.Keyboard.JustDown(this.teclas.atacar) && this.ghorn && !this.lina.morta) {
+      const distancia = Phaser.Math.Distance.Between(this.lina.x, this.lina.y, this.ghorn.x, this.ghorn.y);
+      if (distancia < 80 && this.ghorn.vida > 0) {
+        this.ghorn.vida -= 5; 
+        this.lina.setScale(2.2);
+        this.time.delayedCall(120, () => this.lina.setScale(2));
+        if (this.ghorn.vida <= 0) {
+          this.ghorn.barraVida.clear();
+          this.ghorn.destroy();
+        }
+      }
     }
   }
 }
