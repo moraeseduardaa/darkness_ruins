@@ -5,17 +5,20 @@ class Creditos extends Phaser.Scene {
     super('Creditos');
   }
 
-  preload() {
-    this.load.image('creditos_final', 'assets/Creditos/creditos_finais.png');
-  }
-
   create() {
     const { width, height } = this.sys.game.canvas;
 
-    const fundo = this.add.image(width / 2, height / 2, 'creditos_final');
-    fundo.setScale(Math.max(width / fundo.width, height / fundo.height)).setDepth(-1);
+    // Cor de fundo escura
+    this.cameras.main.setBackgroundColor('#000000');
 
-    // Texto dos créditos
+    // Título dos créditos
+    this.add.text(width / 2, 80, 'CRÉDITOS FINAIS', {
+      fontSize: '40px',
+      fontFamily: 'Georgia',
+      color: '#FFD700', // Dourado
+    }).setOrigin(0.5).setDepth(1);
+
+    // Texto dos créditos, centralizado e animado
     const texto = this.add.text(width / 2, height + 100, `
 Parabéns, herói(a)!
 Você salvou a ilha da escuridão eterna!
@@ -28,23 +31,25 @@ Johan Gabriel da Silva dos Santos
 Jose Armando Ventura
 Mariana Moreira Lima
 Pietra Rolim Mendes
+
+Obrigado por jogar!
 `, {
-      fontSize: '24px',
+      fontSize: '22px',
       color: '#ffffff',
       align: 'center',
-      fontFamily: 'Georgia, serif',
+      fontFamily: 'Georgia',
       wordWrap: { width: width * 0.8 }
     }).setOrigin(0.5);
 
-    // Animação
+    // Animação de rolagem (letreiro subindo)
     this.tweens.add({
       targets: texto,
-      y: -300,
-      duration: 15000,
+      y: -texto.height,
+      duration: 20000,
       ease: 'Linear'
     });
 
-    // Fade in suave no texto
+    // Fade in inicial
     texto.alpha = 0;
     this.tweens.add({
       targets: texto,

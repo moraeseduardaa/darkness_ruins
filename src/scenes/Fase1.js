@@ -10,11 +10,16 @@ class Fase1 extends Phaser.Scene {
     this.load.image('vilao1', 'assets/Personagens/vilao1.png');
     this.load.image('mapa_vilarejo', 'assets/Mapas/mapa_vilarejo.png');
     this.load.image('coracoes', 'assets/Personagens/hud_coracoes.png');
-    this.load.spritesheet('lina_frente', 'assets/Sprites/lina/lina andando de frente-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
-    this.load.spritesheet('lina_costas', 'assets/Sprites/lina/lina andando costas-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
-    this.load.spritesheet('lina_direita', 'assets/Sprites/lina/lina andando direita-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
-    this.load.spritesheet('lina_esquerda', 'assets/Sprites/lina/lina andando esquerda-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
-  }
+    this.load.spritesheet('lina_frente', 'assets/Sprites/lina/andando-de-frente.gif', { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet('lina_costas', 'assets/Sprites/lina/andando-de-costas.gif', { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet('lina_direita', 'assets/Sprites/lina/andando-direita.gif', { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet('lina_esquerda', 'assets/Sprites/lina/andando-esquerda.gif', { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet('lina_ataque_frente', 'assets/Sprites/lina/atacando-de-frente.gif', { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet('lina_ataque_costas', 'assets/Sprites/lina/gif ataque de costas.gif', { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet('lina_ataque_direita', 'assets/Sprites/lina/atacando-direita.gif', { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet('lina_ataque_esquerda', 'assets/Sprites/lina/atacando-esquerda.gif', { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet('lina_morrendo', 'assets/Sprites/lina/morrendo.gif', { frameWidth: 128, frameHeight: 128 });
+}
 
   create() {
     document.body.style.overflow = 'hidden';
@@ -32,7 +37,7 @@ class Fase1 extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(2);
 
     // Lina
-    this.lina = this.physics.add.sprite(width / 2, height / 2, 'lina_frente', 0).setScale(2);
+    this.lina = this.physics.add.sprite(width / 2, height / 2, 'lina_frente', 0).setScale(1);
     this.lina.setCollideWorldBounds(true);
     this.lina.setImmovable(true);
     this.vida = 100;
@@ -42,6 +47,11 @@ class Fase1 extends Phaser.Scene {
     this.anims.create({ key: 'andar_costas', frames: this.anims.generateFrameNumbers('lina_costas', { start: 0, end: 3 }), frameRate: 8, repeat: -1 });
     this.anims.create({ key: 'andar_direita', frames: this.anims.generateFrameNumbers('lina_direita', { start: 0, end: 3 }), frameRate: 8, repeat: -1 });
     this.anims.create({ key: 'andar_esquerda', frames: this.anims.generateFrameNumbers('lina_esquerda', { start: 0, end: 3 }), frameRate: 8, repeat: -1 });
+    this.anims.create({ key: 'ataque_frente', frames: this.anims.generateFrameNumbers('lina_ataque_frente', { start: 0, end: 3 }), frameRate: 10, repeat: 0 });
+    this.anims.create({ key: 'ataque_costas', frames: this.anims.generateFrameNumbers('lina_ataque_costas', { start: 0, end: 3 }), frameRate: 10, repeat: 0 });
+    this.anims.create({ key: 'ataque_direita', frames: this.anims.generateFrameNumbers('lina_ataque_direita', { start: 0, end: 3 }), frameRate: 10, repeat: 0 });
+    this.anims.create({ key: 'ataque_esquerda', frames: this.anims.generateFrameNumbers('lina_ataque_esquerda', { start: 0, end: 3 }), frameRate: 10, repeat: 0 });
+    this.anims.create({ key: 'lina_morrendo', frames: this.anims.generateFrameNumbers('lina_morrendo', { start: 0, end: 5 }), frameRate: 8, repeat: 0 });
 
     // Corações
     this.coracoes = [];
@@ -127,7 +137,8 @@ class Fase1 extends Phaser.Scene {
           this.time.delayedCall(200, () => this.lina.clearTint());
           ogro.lastAttackTime = now;
           if (this.vida <= 0) {
-            this.scene.restart();
+            this.lina.anims.play('lina_morrendo', true);
+            this.time.delayedCall(800, () => this.scene.restart());
           }
         }
       }, null, this);
@@ -142,35 +153,60 @@ class Fase1 extends Phaser.Scene {
     let vx = 0;
     let vy = 0;
 
+    // Impede comandos se Lina estiver morrendo
+    if (this.lina.anims.currentAnim && this.lina.anims.currentAnim.key === 'lina_morrendo') {
+      this.lina.body.setVelocity(0);
+      return;
+    }
+
     if (cima.isDown) {
       vy = -speed;
       this.lina.anims.play('andar_costas', true);
+      this.ultimaDirecao = 'costas';
       moving = true;
     } else if (baixo.isDown) {
       vy = speed;
       this.lina.anims.play('andar_frente', true);
+      this.ultimaDirecao = 'frente';
       moving = true;
     } else if (direita.isDown) {
       vx = speed;
       this.lina.anims.play('andar_direita', true);
+      this.ultimaDirecao = 'direita';
       moving = true;
     } else if (esquerda.isDown) {
       vx = -speed;
       this.lina.anims.play('andar_esquerda', true);
+      this.ultimaDirecao = 'esquerda';
       moving = true;
     }
 
     this.lina.body.setVelocity(vx, vy);
-    if (!moving) this.lina.anims.stop();
+    if (!moving && (!this.lina.anims.currentAnim || !this.lina.anims.currentAnim.key.startsWith('ataque'))) this.lina.anims.stop();
 
     // Ataque
-    if (Phaser.Input.Keyboard.JustDown(atacar)) {
-      this.lina.setScale(2);
-      this.time.delayedCall(150, () => {
-        this.lina.setScale(2);
+    if (Phaser.Input.Keyboard.JustDown(atacar) && (!this.lina.anims.currentAnim || !this.lina.anims.currentAnim.key.startsWith('ataque'))) {
+      let anim = 'ataque_frente';
+      if (this.ultimaDirecao === 'costas') anim = 'ataque_costas';
+      else if (this.ultimaDirecao === 'direita') anim = 'ataque_direita';
+      else if (this.ultimaDirecao === 'esquerda') anim = 'ataque_esquerda';
+      this.lina.anims.play(anim, true);
+      this.lina.setScale(1);
+      this.lina.body.setVelocity(0);
+      this.lina.isAttacking = true;
+      // Marca ogros já atingidos neste ataque
+      this.lina.ogrosAtingidos = new Set();
+      this.lina.once('animationcomplete', () => {
+        this.lina.isAttacking = false;
+        this.lina.ogrosAtingidos = undefined;
       });
+    }
 
+    // Aplica dano aos ogros apenas durante o ataque e apenas uma vez por ogro por ataque
+    if (this.lina.isAttacking && this.lina.anims.currentAnim && this.lina.anims.currentAnim.key.startsWith('ataque')) {
       this.ogros.forEach(ogro => {
+        if (!ogro.active) return;
+        if (this.lina.ogrosAtingidos && this.lina.ogrosAtingidos.has(ogro)) return;
         const distancia = Phaser.Math.Distance.BetweenPoints(this.lina, ogro);
         if (distancia < 80 && ogro.vida > 0) {
           ogro.vida -= 5;
@@ -178,8 +214,15 @@ class Fase1 extends Phaser.Scene {
             ogro.barraVida.clear();
             ogro.destroy();
           }
+          if (this.lina.ogrosAtingidos) this.lina.ogrosAtingidos.add(ogro);
         }
       });
+    }
+
+    // Impede movimento durante o ataque
+    if (this.lina.isAttacking) {
+      this.lina.body.setVelocity(0);
+      return;
     }
 
     // Barra de vida do ogro
