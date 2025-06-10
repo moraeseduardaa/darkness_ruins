@@ -87,10 +87,11 @@ class Fase1 extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(2);
 
     // Lina
-    this.lina = this.physics.add.sprite(960, 960, 'lina_frente', 0).setScale(0.6); 
+    this.lina = this.physics.add.sprite(960, 960, 'lina_frente', 0).setScale(0.8); 
     this.lina.setCollideWorldBounds(true);
     this.lina.setImmovable(true);
     this.vida = 100;
+    this.direcaoLina = 'frente'; 
 
     this.cameras.main.startFollow(this.lina);
 
@@ -161,13 +162,19 @@ class Fase1 extends Phaser.Scene {
       this.physics.add.collider(this.lina, ogro, () => {
         const now = this.time.now;
         if (now - ogro.lastAttackTime > 1000 && this.vida > 0) {
-          this.vida -= 10;
+          this.vida -= 25; 
           this.atualizarCoracoes();
           this.lina.setTint(0xff0000);
           this.time.delayedCall(200, () => this.lina.clearTint());
           ogro.lastAttackTime = now;
           if (this.vida <= 0) {
-            this.scene.restart();
+            this.lina.anims.play('lina_morrendo', true);
+            this.lina.setScale(0.8);
+            this.lina.once('animationcomplete', () => {
+              this.scene.restart();
+            });
+            this.vida = -9999;
+            return;
           }
         }
       }, null, this);
@@ -187,18 +194,22 @@ class Fase1 extends Phaser.Scene {
       vy = -speed;
       this.lina.anims.play('andar_costas', true);
       moving = true;
+      this.direcaoLina = 'costas';
     } else if (baixo.isDown) {
       vy = speed;
       this.lina.anims.play('andar_frente', true);
       moving = true;
+      this.direcaoLina = 'frente';
     } else if (direita.isDown) {
       vx = speed;
       this.lina.anims.play('andar_direita', true);
       moving = true;
+      this.direcaoLina = 'direita';
     } else if (esquerda.isDown) {
       vx = -speed;
       this.lina.anims.play('andar_esquerda', true);
       moving = true;
+      this.direcaoLina = 'esquerda';
     }
 
     this.lina.body.setVelocity(vx, vy);
@@ -207,14 +218,14 @@ class Fase1 extends Phaser.Scene {
     // ataque da lina
     if (Phaser.Input.Keyboard.JustDown(atacar)) {
       let anim = 'ataque_frente';
-      if (direita.isDown) anim = 'ataque_direita';
-      else if (esquerda.isDown) anim = 'ataque_esquerda';
-      else if (cima.isDown) anim = 'ataque_costas';
-      else if (baixo.isDown) anim = 'ataque_frente';
+      if (this.direcaoLina === 'direita') anim = 'ataque_direita';
+      else if (this.direcaoLina === 'esquerda') anim = 'ataque_esquerda';
+      else if (this.direcaoLina === 'costas') anim = 'ataque_costas';
+      else if (this.direcaoLina === 'frente') anim = 'ataque_frente';
       this.lina.anims.play(anim, true);
-      this.lina.setScale(0.6); 
+      this.lina.setScale(0.8); 
       this.time.delayedCall(150, () => {
-        this.lina.setScale(0.6);
+        this.lina.setScale(0.8); 
       });
 
       this.ogros.forEach(ogro => {
