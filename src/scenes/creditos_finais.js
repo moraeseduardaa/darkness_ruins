@@ -28,6 +28,7 @@ Este jogo foi criado com coragem, café e criatividade por:
 Eduarda Pereira de Moraes
 Gabrielly Rossi Araujo
 Johan Gabriel da Silva dos Santos
+Jose Armando Ventura
 Mariana Moreira Lima
 Pietra Rolim Mendes
 
