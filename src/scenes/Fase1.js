@@ -27,9 +27,22 @@ class Fase1 extends Phaser.Scene {
     this.load.spritesheet('ogro_atacando_costas', 'assets/Sprites/ogros/ogro_atacando_costas.gif', { frameWidth: 128, frameHeight: 128 });
     this.load.spritesheet('ogro_atacando_direita', 'assets/Sprites/ogros/ogro_atacando_direita.gif', { frameWidth: 128, frameHeight: 128 });
     this.load.spritesheet('ogro_atacando_esquerda', 'assets/Sprites/ogros/ogro_atacando_esquerda.gif', { frameWidth: 128, frameHeight: 128 });
+    this.load.image('moeda', 'assets/Personagens/moeda.png'); 
+
   }
 
   create() {
+//loja
+ this.input.keyboard.on('keydown-C', () => {
+  if (!this.lojaAberta) {
+    this.abrirLoja();
+  }
+});
+  this.input.keyboard.enabled = true;
+  this.input.keyboard.target = window;
+  this.moedasColetadas = 0;
+
+
     document.body.style.overflow = 'hidden';
     document.body.style.margin = '0';
     document.body.style.padding = '0';
@@ -63,7 +76,7 @@ class Fase1 extends Phaser.Scene {
 
     const textoIntro = this.add.text(
       larguraTela / 2, alturaTela / 2 + 100,
-      'Olá, Lina!\nUse W, A, S, D para se mover e SPACE para atacar.\nVocê enfrentará 4 fases cheias de perigos.\nSupere todas... e derrote Ghorn na fase final para salvar a ilha!',
+      'Olá, Lina!\nUse W, A, S, D para se mover, SPACE para atacar e C para acessar a loja.\nVocê enfrentará 4 fases cheias de perigos.\nSupere todas... e derrote Ghorn na fase final para salvar a ilha!',
       {
         fontSize: '20px',
         color: '#ffffff',
@@ -126,8 +139,12 @@ class Fase1 extends Phaser.Scene {
         .setOrigin(0, 0);
       this.coracoes.push(coracao);
     }
+//adicionando tecla de compra 
+    this.teclas = this.input.keyboard.addKeys({ cima: 'W', baixo: 'S', esquerda: 'A', direita: 'D', atacar: 'SPACE', lojinha: Phaser.Input.Keyboard.KeyCodes.C  });
 
-    this.teclas = this.input.keyboard.addKeys({ cima: 'W', baixo: 'S', esquerda: 'A', direita: 'D', atacar: 'SPACE' });
+    this.lojaAberta = false;
+    this.temEscudo = false;
+    this.danoExtra = false;
 
     // Ogros
     this.ogros = [];
@@ -179,9 +196,44 @@ class Fase1 extends Phaser.Scene {
         }
       }, null, this);
     }
+//moeda
+  this.moedas = this.physics.add.group();
+
+  const posicoesMoedas = [
+    { x: 700, y: 800 },
+    { x: 1100, y: 1000 },
+    { x: 1300, y: 900 },
+    // adicione mais posições aqui
+  ];
+//deteccao lina na moeda
+  posicoesMoedas.forEach(pos => {
+    const moeda = this.moedas.create(pos.x, pos.y, 'moeda').setScale(0.06).setDepth(1);
+    moeda.body.setAllowGravity(false);
+  });
+
+  this.moedasColetadas = 0;
+
+  this.physics.add.overlap(this.lina, this.moedas, (lina, moeda) => {
+  moeda.destroy();
+  this.moedasColetadas++;
+  console.log('Moedas: ', this.moedasColetadas);
+}, null, this);
+
+  this.textoMoedasHUD = this.add.text(this.cameras.main.width / 2, 20, `🪙 ${this.moedasColetadas}`, {
+  fontSize: '20px',
+  fontFamily: 'Arial',
+  color: '#ffffff',
+  backgroundColor: '#00000066',
+  padding: { x: 10, y: 5 }
+})
+.setOrigin(0.5, 0) 
+.setScrollFactor(0)
+.setDepth(30);
+
   }
 
   update() {
+
     if (!this.lina) return;
     const speed = 200;
     const { cima, baixo, esquerda, direita, atacar } = this.teclas;
@@ -270,7 +322,142 @@ class Fase1 extends Phaser.Scene {
         });
       }
     }
+    //loja
+  if (this.textoMoedasHUD) {
+  this.textoMoedasHUD.setText(`🪙 ${this.moedasColetadas}`);
+}
+  this.atualizarTextoMoedas();
   }
+//loja
+abrirLoja() {
+  this.lojaAberta = true;
+
+  const largura = this.sys.game.canvas.width;
+  const altura = this.sys.game.canvas.height;
+
+  const fundo = this.add.rectangle(largura / 2, altura / 2, largura * 0.6, altura * 0.6, 0x222222, 0.50)
+    .setDepth(10)
+    .setStrokeStyle(4, 0xffffff)
+    .setScrollFactor(0);
+
+  const texto = this.add.text(largura / 2, altura / 2 - 120, '🛒 LOJA DE PODERES', {
+    fontSize: '32px',
+    fontFamily: 'IM Fell English SC',
+    fontStyle: 'bold',
+    color: '#8B4513',
+    stroke: '#1a1a1a',
+    strokeThickness: 0.5
+  }).setOrigin(0.5).setDepth(11).setScrollFactor(0);
+
+  this.textoMoedasLoja = this.add.text(largura / 2, altura / 2 + 100, `🪙 Moedas: ${this.moedasColetadas}`, {
+    fontSize: '18px',
+    fontFamily: 'Arial',
+    color: '#ffffff',
+    backgroundColor: '#00000044',
+    padding: { x: 10, y: 5 }
+  }).setOrigin(0.5).setDepth(11).setScrollFactor(0);
+
+  this.botoesLoja = [fundo, texto, this.textoMoedasLoja];
+
+  const opcoes = [
+    {
+      texto: '🩸 +1 Vida (4 moedas)',
+      acao: () => {
+        if (this.moedasColetadas >= 4) {
+          this.vida = Math.min(this.vida + 20, 100);
+          this.moedasColetadas -= 4;
+          this.atualizarTextoMoedas();
+        } else {
+          this.mostrarAvisoMoedasInsuficientes(largura, altura);
+        }
+      }
+    },
+    {
+      texto: '🛡️ Escudo Temporário (2 moedas)',
+      acao: () => {
+        if (this.moedasColetadas >= 2) {
+          this.temEscudo = true;
+          this.moedasColetadas -= 2;
+          this.atualizarTextoMoedas();
+          this.time.delayedCall(5000, () => this.temEscudo = false);
+        } else {
+          this.mostrarAvisoMoedasInsuficientes(largura, altura);
+        }
+      }
+    },
+    {
+      texto: '💥 +Dano Temporário (3 moedas)',
+      acao: () => {
+        if (this.moedasColetadas >= 3) {
+          this.danoExtra = true;
+          this.moedasColetadas -= 3;
+          this.atualizarTextoMoedas();
+          this.time.delayedCall(5000, () => this.danoExtra = false);
+        } else {
+          this.mostrarAvisoMoedasInsuficientes(largura, altura);
+        }
+      }
+    }
+  ];
+
+  opcoes.forEach((op, i) => {
+    const botao = this.add.text(largura / 2, altura / 2 - 20 + i * 60, op.texto, {
+      fontSize: '16px',
+      fontFamily: 'Cinzel',
+      padding: { x: 20, y: 10 },
+      backgroundColor: '#333',
+      color: '#ffffff',
+      align: 'center',
+      fixedWidth: 250
+    })
+      .setOrigin(0.5)
+      .setDepth(11)
+      .setInteractive()
+      .setScrollFactor(0);
+
+    botao.on('pointerover', () => {
+      botao.setStyle({ backgroundColor: '#666', color: '#87CEFA' });
+    });
+    botao.on('pointerout', () => {
+      botao.setStyle({ backgroundColor: '#444', color: '#ffffff' });
+    });
+    botao.on('pointerdown', () => {
+      op.acao();
+      this.fecharLoja();
+    });
+
+    this.botoesLoja.push(botao);
+  });
+}
+
+fecharLoja() {
+  this.lojaAberta = false;
+  this.botoesLoja.forEach(b => b.destroy());
+}
+
+atualizarTextoMoedas() {
+  if (this.textoMoedasLoja) {
+    this.textoMoedasLoja.setText(`🪙 Moedas: ${this.moedasColetadas}`);
+  }
+  if (this.textoMoedasTela) {
+    this.textoMoedasTela.setText(`🪙 ${this.moedasColetadas}`);
+  }
+}
+
+mostrarAvisoMoedasInsuficientes(largura, altura) {
+  const aviso = this.add.text(largura / 2, altura / 2 + 130, 'Moedas insuficientes!', {
+    fontSize: '18px',
+    fontFamily: 'Arial',
+    color: '#ff5555',
+    backgroundColor: '#000000aa',
+    padding: { x: 10, y: 5 }
+  }).setOrigin(0.5).setDepth(12).setScrollFactor(0);
+
+  this.time.delayedCall(2000, () => {
+    aviso.destroy();
+  });
+}
+
 }
 
 export default Fase1;

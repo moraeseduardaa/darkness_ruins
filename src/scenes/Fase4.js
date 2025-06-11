@@ -111,6 +111,7 @@ class Fase4 extends Phaser.Scene {
         .setOrigin(0, 0);
       this.coracoes.push(coracao);
     }
+ 
   }
 
   update() {
@@ -156,7 +157,9 @@ class Fase4 extends Phaser.Scene {
     this.coracoes.forEach((c, i) => {
       c.setVisible(i < coracoesVisiveis);
     });
+
   }
 }
+
 
 export default Fase4;

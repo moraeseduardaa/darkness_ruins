@@ -132,6 +132,7 @@ class Fase2 extends Phaser.Scene {
         }
       }, null, this);
     }
+
   }
 
   update() {
@@ -210,7 +211,9 @@ class Fase2 extends Phaser.Scene {
         });
       }
     }
-  }
 }
+
+  }
+
 
 export default Fase2;
