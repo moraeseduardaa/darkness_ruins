@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import CreditosIniciais from './scenes/creditos_iniciais.js';
-import Fase1 from './scenes/Fase1.js';
+import { Fase1, LojaScene } from './scenes/Fase1.js';
 import Fase2 from './scenes/Fase2.js';
 import Fase3 from './scenes/Fase3.js';
 import Fase4 from './scenes/Fase4.js';
@@ -27,6 +27,7 @@ const config = {
     Fase3,
     Fase4,
     creditos_finais,
+    LojaScene,
     GameOver // ✅ adiciona a cena aqui
   ]
 };
