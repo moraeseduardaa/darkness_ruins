@@ -7,12 +7,21 @@ class Fase4 extends Phaser.Scene {
 
   preload() {
     this.load.image('ghorn', 'assets/Personagens/ghorn.png');
-    this.load.image('mapa_labirinto', 'assets/Mapas/fase4a.png'); // imagem nova ampliada
+    this.load.image('mapa_labirinto', 'assets/Mapas/fase4a.png');
     this.load.image('coracoes', 'assets/Personagens/hud_coracoes.png');
+
+    // Movimentação
     this.load.spritesheet('lina_frente', 'assets/Sprites/lina/lina andando de frente-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
     this.load.spritesheet('lina_costas', 'assets/Sprites/lina/lina andando costas-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
     this.load.spritesheet('lina_direita', 'assets/Sprites/lina/lina andando direita-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
     this.load.spritesheet('lina_esquerda', 'assets/Sprites/lina/lina andando esquerda-sprite-sheet.png', { frameWidth: 64, frameHeight: 64 });
+
+    // Ataques e morte
+    this.load.spritesheet('lina_ataque_frente', 'assets/Sprites/lina/atacando/sprite-sheet-ataque-de-frente.png', { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet('lina_ataque_costas', 'assets/Sprites/lina/atacando/sprite-sheet-atacando-de-costas.png', { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet('lina_ataque_direita', 'assets/Sprites/lina/atacando/sprite-sheet-ataque-direita.png', { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet('lina_ataque_esquerda', 'assets/Sprites/lina/atacando/sprite-sheet-ataque-esquerda.png', { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet('lina_morrendo', 'assets/Sprites/lina/morrendo/sprite-sheet-morrendo.png', { frameWidth: 128, frameHeight: 128 });
   }
 
   create() {
@@ -21,7 +30,7 @@ class Fase4 extends Phaser.Scene {
     const largura = 1920;
     const altura = 1920;
 
-    this.fundo = this.add.image(0, 0, 'mapa_labirinto')
+    this.add.image(0, 0, 'mapa_labirinto')
       .setOrigin(0)
       .setDepth(-2)
       .setDisplaySize(largura, altura);
@@ -30,13 +39,9 @@ class Fase4 extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, largura, altura);
 
     const fundoEscuro = this.add.rectangle(960, 960, largura, altura, 0x000000, 0.8).setDepth(2);
-
     const imagemIntro = this.add.image(960, 910, 'ghorn').setScale(0.25).setDepth(3);
-
     const textoIntro = this.add.text(960, 1050, 'Derrote Ghorn e salve a ilha!', {
-      fontSize: '24px',
-      color: '#ff4444',
-      fontStyle: 'bold'
+      fontSize: '24px', color: '#ff4444', fontStyle: 'bold'
     }).setOrigin(0.5).setDepth(3);
 
     this.time.delayedCall(4000, () => {
@@ -56,6 +61,8 @@ class Fase4 extends Phaser.Scene {
     this.lina.setCollideWorldBounds(true);
     this.lina.vida = 100;
     this.lina.morta = false;
+    this.direcaoLina = 'frente';
+    this.estaAtacando = false;
 
     this.cameras.main.startFollow(this.lina);
 
@@ -75,9 +82,12 @@ class Fase4 extends Phaser.Scene {
         this.time.delayedCall(200, () => this.lina.clearTint());
         this.ghorn.lastAttackTime = now;
 
-        if (this.lina.vida <= 0) {
+        if (this.lina.vida <= 0 && !this.lina.morta) {
           this.lina.morta = true;
-          this.scene.restart();
+          this.lina.anims.play('lina_morrendo', true);
+          this.lina.once('animationcomplete', () => {
+            this.scene.restart();
+          });
         }
       }
     });
@@ -96,10 +106,17 @@ class Fase4 extends Phaser.Scene {
       this.ghorn.barraVida.setDepth(2);
     };
 
-    this.anims.create({ key: 'andar_frente', frames: this.anims.generateFrameNumbers('lina_frente', { start: 0, end: 3 }), frameRate: 8, repeat: -1 });
-    this.anims.create({ key: 'andar_costas', frames: this.anims.generateFrameNumbers('lina_costas', { start: 0, end: 3 }), frameRate: 8, repeat: -1 });
-    this.anims.create({ key: 'andar_direita', frames: this.anims.generateFrameNumbers('lina_direita', { start: 0, end: 3 }), frameRate: 8, repeat: -1 });
-    this.anims.create({ key: 'andar_esquerda', frames: this.anims.generateFrameNumbers('lina_esquerda', { start: 0, end: 3 }), frameRate: 8, repeat: -1 });
+    // Animações
+    this.anims.create({ key: 'andar_frente', frames: this.anims.generateFrameNumbers('lina_frente', { start: 0, end: 7 }), frameRate: 8, repeat: -1 });
+    this.anims.create({ key: 'andar_costas', frames: this.anims.generateFrameNumbers('lina_costas', { start: 0, end: 7 }), frameRate: 8, repeat: -1 });
+    this.anims.create({ key: 'andar_direita', frames: this.anims.generateFrameNumbers('lina_direita', { start: 0, end: 7 }), frameRate: 8, repeat: -1 });
+    this.anims.create({ key: 'andar_esquerda', frames: this.anims.generateFrameNumbers('lina_esquerda', { start: 0, end: 7 }), frameRate: 8, repeat: -1 });
+
+    this.anims.create({ key: 'ataque_frente', frames: this.anims.generateFrameNumbers('lina_ataque_frente', { start: 0, end: 7 }), frameRate: 8, repeat: -1 });
+    this.anims.create({ key: 'ataque_costas', frames: this.anims.generateFrameNumbers('lina_ataque_costas', { start: 0, end: 7 }), frameRate: 8, repeat: -1 });
+    this.anims.create({ key: 'ataque_direita', frames: this.anims.generateFrameNumbers('lina_ataque_direita', { start: 0, end: 7 }), frameRate: 8, repeat: -1 });
+    this.anims.create({ key: 'ataque_esquerda', frames: this.anims.generateFrameNumbers('lina_ataque_esquerda', { start: 0, end: 7 }), frameRate: 8, repeat: -1 });
+    this.anims.create({ key: 'lina_morrendo', frames: this.anims.generateFrameNumbers('lina_morrendo', { start: 0, end: 7 }), frameRate: 8 });
 
     // Corações
     this.coracoes = [];
@@ -114,41 +131,85 @@ class Fase4 extends Phaser.Scene {
   }
 
   update() {
-    if (!this.lina || !this.teclas) return;
-
-    const { cima, baixo, esquerda, direita, atacar } = this.teclas;
+    if (!this.lina || !this.teclas || this.lina.morta) return;
+  
     const speed = 200;
+    const { cima, baixo, esquerda, direita, atacar } = this.teclas;
+    let moving = false;
+    this.lina.body.setVelocity(0);
     let vx = 0;
     let vy = 0;
-    let anim = null;
 
-    if (cima.isDown) { vy = -speed; anim = 'andar_costas'; }
-    else if (baixo.isDown) { vy = speed; anim = 'andar_frente'; }
-    else if (direita.isDown) { vx = speed; anim = 'andar_direita'; }
-    else if (esquerda.isDown) { vx = -speed; anim = 'andar_esquerda'; }
-
-    this.lina.setVelocity(vx, vy);
-    if (anim) this.lina.anims.play(anim, true);
-    else this.lina.anims.stop();
-
-    this.ghorn.atualizarBarraVida();
-
-    if (!this.lina.morta) {
-      this.physics.moveToObject(this.ghorn, this.lina, this.ghorn.speed);
+    if (cima.isDown) {
+      vy = -speed;
+      this.lina.anims.play('andar_costas', true);
+      moving = true;
+      this.direcaoLina = 'costas';
+    } else if (baixo.isDown) {
+      vy = speed;
+      this.lina.anims.play('andar_frente', true);
+      moving = true;
+      this.direcaoLina = 'frente';
+    } else if (direita.isDown) {
+      vx = speed;
+      this.lina.anims.play('andar_direita', true);
+      moving = true;
+      this.direcaoLina = 'direita';
+    } else if (esquerda.isDown) {
+      vx = -speed;
+      this.lina.anims.play('andar_esquerda', true);
+      moving = true;
+      this.direcaoLina = 'esquerda';
     }
 
+    this.lina.body.setVelocity(vx, vy);
+    if (!moving) this.lina.anims.stop();
+
     if (Phaser.Input.Keyboard.JustDown(atacar)) {
+      let anim = 'ataque_frente';
+      let vx = 0;
+      let vy = 0;
+      if (this.direcaoLina === 'direita') {
+        anim = 'ataque_direita';
+        vx = speed;
+      } else if (this.direcaoLina === 'esquerda') {
+        anim = 'ataque_esquerda';
+        vx = -speed;
+      } else if (this.direcaoLina === 'costas') {
+        anim = 'ataque_costas';
+        vy = -speed;
+      } else if (this.direcaoLina === 'frente') {
+        anim = 'ataque_frente';
+        vy = speed;
+      }
+      this.lina.setTexture('lina_' + anim);
+      this.lina.anims.play(anim, true);
+      this.lina.setScale(0.8);
+      this.lina.body.setVelocity(vx, vy);
+      this.time.delayedCall(400, () => {
+        this.lina.anims.stop();
+        this.lina.setScale(0.8);
+        this.lina.body.setVelocity(0, 0);
+        this.lina.setTexture('lina_frente');
+      });
+      this.estaAtacando = true;
+      this.time.delayedCall(300, () => {
+        this.estaAtacando = false;
+      });
+
       const distancia = Phaser.Math.Distance.Between(this.lina.x, this.lina.y, this.ghorn.x, this.ghorn.y);
       if (distancia < 80 && this.ghorn.vida > 0) {
         this.ghorn.vida -= 5;
-        this.lina.setScale(2.2);
-        this.time.delayedCall(120, () => this.lina.setScale(2));
-
         if (this.ghorn.vida <= 0) {
           this.ghorn.barraVida.clear();
           this.ghorn.destroy();
         }
       }
+
+      this.time.delayedCall(400, () => {
+        this.estaAtacando = false;
+        this.lina.setTexture('lina_frente');
+      });
     }
 
     // Atualiza corações da Lina

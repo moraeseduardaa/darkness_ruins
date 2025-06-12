@@ -14,20 +14,10 @@ class CreditosIniciais extends Phaser.Scene {
     const { width, height } = this.sys.game.canvas;
 
     const capa = this.add.image(width / 2, height / 2, 'capa');
-    const scaleX = width / 1536;
-    const scaleY = height / 1024;
-    const scale = Math.max(scaleX, scaleY); // cobre toda a tela
+    const scaleX = width / capa.width;
+    const scaleY = height / capa.height;
+    const scale = Math.max(scaleX, scaleY);
     capa.setScale(scale).setDepth(-1);
-
-    this.scale.on('resize', (gameSize) => {
-      const { width, height } = gameSize;
-      capa.setPosition(width / 2, height / 2);
-      const scaleX = width / 1536;
-      const scaleY = height / 1024;
-      const scale = Math.max(scaleX, scaleY);
-      capa.setScale(scale);
-      botao.setPosition(width / 2, height - 250);
-    });
 
     const botaoY = height - 250; 
     const botao = this.add.image(width / 2, botaoY, 'botao_play')
