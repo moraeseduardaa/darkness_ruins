@@ -18,9 +18,20 @@ class Fase3 extends Phaser.Scene {
     this.load.spritesheet('lina_ataque_direita', 'assets/Sprites/lina/atacando/sprite-sheet-ataque-direita.png', { frameWidth: 128, frameHeight: 128 });
     this.load.spritesheet('lina_ataque_esquerda', 'assets/Sprites/lina/atacando/sprite-sheet-ataque-esquerda.png', { frameWidth: 128, frameHeight: 128 });
     this.load.spritesheet('lina_morrendo', 'assets/Sprites/lina/morrendo/sprite-sheet-morrendo.png', { frameWidth: 128, frameHeight: 128 });
+    this.load.image('moeda', 'assets/Personagens/moeda.png'); 
   }
 
   create() {
+    //loja
+    this.input.keyboard.on('keydown-C', () => {
+      if (!this.lojaAberta) {
+        this.abrirLoja();
+      }
+    });
+      this.input.keyboard.enabled = true;
+      this.input.keyboard.target = window;
+      this.moedasColetadas = 0;
+
     document.body.style.overflow = 'hidden';
     document.body.style.margin = '0';
     document.body.style.padding = '0';
@@ -39,7 +50,7 @@ class Fase3 extends Phaser.Scene {
     this.physics.world.setBounds(0, 0, largura, altura);
     this.cameras.main.setBounds(0, 0, largura, altura);
 
-    this.add.text(largura / 2, 30, 'Fase 3 - Floresta das Ruínas', {
+    this.add.text(largura / 2, 30, '', {
       fontSize: '20px',
       color: '#ffffff'
     }).setOrigin(0.5).setDepth(2);
@@ -65,6 +76,13 @@ class Fase3 extends Phaser.Scene {
     this.anims.create({ key: 'ataque_direita', frames: this.anims.generateFrameNumbers('lina_ataque_direita', { start: 0, end: 7 }), frameRate: 8, repeat: -1 });
     this.anims.create({ key: 'ataque_esquerda', frames: this.anims.generateFrameNumbers('lina_ataque_esquerda', { start: 0, end: 7 }), frameRate: 8, repeat: -1 });
     this.anims.create({ key: 'lina_morrendo', frames: this.anims.generateFrameNumbers('lina_morrendo', { start: 0, end: 5 }), frameRate: 8, repeat: 1 });
+
+    //adicionando tecla de compra 
+    this.teclas = this.input.keyboard.addKeys({ cima: 'W', baixo: 'S', esquerda: 'A', direita: 'D', atacar: 'SPACE', lojinha: Phaser.Input.Keyboard.KeyCodes.C  });
+
+    this.lojaAberta = false;
+    this.temEscudo = false;
+    this.danoExtra = false;
 
     this.coracoes = [];
     for (let i = 0; i < 5; i++) {
@@ -127,6 +145,40 @@ class Fase3 extends Phaser.Scene {
         }
       }, null, this);
     }
+
+    //moeda
+      this.moedas = this.physics.add.group();
+
+      const posicoesMoedas = [
+        { x: 700, y: 800 },
+        { x: 1100, y: 1000 },
+        { x: 1300, y: 900 },
+      ];
+      posicoesMoedas.forEach(pos => {
+        const moeda = this.moedas.create(pos.x, pos.y, 'moeda').setScale(0.06).setDepth(1);
+        moeda.body.setAllowGravity(false);
+      });
+
+      this.moedasColetadas = 0;
+
+      this.physics.add.overlap(this.lina, this.moedas, (lina, moeda) => {
+      moeda.destroy();
+      this.moedasColetadas++;
+      console.log('Moedas: ', this.moedasColetadas);
+    }, null, this);
+
+      this.textoMoedasHUD = this.add.text(this.cameras.main.width / 2, 20, `🪙 ${this.moedasColetadas}`, {
+      fontSize: '20px',
+      fontFamily: 'Arial',
+      color: '#ffffff',
+      backgroundColor: '#00000066',
+      padding: { x: 10, y: 5 }
+    })
+    .setOrigin(0.5, 0) 
+    .setScrollFactor(0)
+    .setDepth(30);
+
+
   }
 
   update() {
@@ -236,6 +288,142 @@ class Fase3 extends Phaser.Scene {
         });
       }
     }
+
+        //loja
+  if (this.textoMoedasHUD) {
+  this.textoMoedasHUD.setText(`🪙 ${this.moedasColetadas}`);
+}
+  this.atualizarTextoMoedas();
+  }
+    //loja
+    abrirLoja() {
+      this.lojaAberta = true;
+
+      const largura = this.sys.game.canvas.width;
+      const altura = this.sys.game.canvas.height;
+
+      const fundo = this.add.rectangle(largura / 2, altura / 2, largura * 0.6, altura * 0.6, 0x222222, 0.50)
+        .setDepth(10)
+        .setStrokeStyle(4, 0xffffff)
+        .setScrollFactor(0);
+
+      const texto = this.add.text(largura / 2, altura / 2 - 120, '🛒 LOJA DE PODERES', {
+        fontSize: '32px',
+        fontFamily: 'IM Fell English SC',
+        fontStyle: 'bold',
+        color: '#8B4513',
+        stroke: '#1a1a1a',
+        strokeThickness: 0.5
+      }).setOrigin(0.5).setDepth(11).setScrollFactor(0);
+
+      this.textoMoedasLoja = this.add.text(largura / 2, altura / 2 + 100, `🪙 Moedas: ${this.moedasColetadas}`, {
+        fontSize: '18px',
+        fontFamily: 'Arial',
+        color: '#ffffff',
+        backgroundColor: '#00000044',
+        padding: { x: 10, y: 5 }
+      }).setOrigin(0.5).setDepth(11).setScrollFactor(0);
+
+      this.botoesLoja = [fundo, texto, this.textoMoedasLoja];
+
+      const opcoes = [
+        {
+          texto: '🩸 +1 Vida (4 moedas)',
+          acao: () => {
+            if (this.moedasColetadas >= 4) {
+              this.vida = Math.min(this.vida + 20, 100);
+              this.moedasColetadas -= 4;
+              this.atualizarTextoMoedas();
+            } else {
+              this.mostrarAvisoMoedasInsuficientes(largura, altura);
+            }
+          }
+        },
+        {
+          texto: '🛡️ Escudo Temporário (2 moedas)',
+          acao: () => {
+            if (this.moedasColetadas >= 2) {
+              this.temEscudo = true;
+              this.moedasColetadas -= 2;
+              this.atualizarTextoMoedas();
+              this.time.delayedCall(5000, () => this.temEscudo = false);
+            } else {
+              this.mostrarAvisoMoedasInsuficientes(largura, altura);
+            }
+          }
+        },
+        {
+          texto: '💥 +Dano Temporário (3 moedas)',
+          acao: () => {
+            if (this.moedasColetadas >= 3) {
+              this.danoExtra = true;
+              this.moedasColetadas -= 3;
+              this.atualizarTextoMoedas();
+              this.time.delayedCall(5000, () => this.danoExtra = false);
+            } else {
+              this.mostrarAvisoMoedasInsuficientes(largura, altura);
+            }
+          }
+        }
+      ];
+
+      opcoes.forEach((op, i) => {
+        const botao = this.add.text(largura / 2, altura / 2 - 20 + i * 60, op.texto, {
+          fontSize: '16px',
+          fontFamily: 'Cinzel',
+          padding: { x: 20, y: 10 },
+          backgroundColor: '#333',
+          color: '#ffffff',
+          align: 'center',
+          fixedWidth: 250
+        })
+          .setOrigin(0.5)
+          .setDepth(11)
+          .setInteractive()
+          .setScrollFactor(0);
+
+        botao.on('pointerover', () => {
+          botao.setStyle({ backgroundColor: '#666', color: '#87CEFA' });
+        });
+        botao.on('pointerout', () => {
+          botao.setStyle({ backgroundColor: '#444', color: '#ffffff' });
+        });
+        botao.on('pointerdown', () => {
+          op.acao();
+          this.fecharLoja();
+        });
+
+        this.botoesLoja.push(botao);
+      });
+    }
+
+    fecharLoja() {
+      this.lojaAberta = false;
+      this.botoesLoja.forEach(b => b.destroy());
+    }
+
+    atualizarTextoMoedas() {
+      if (this.textoMoedasLoja) {
+        this.textoMoedasLoja.setText(`🪙 Moedas: ${this.moedasColetadas}`);
+      }
+      if (this.textoMoedasTela) {
+        this.textoMoedasTela.setText(`🪙 ${this.moedasColetadas}`);
+      }
+    }
+
+    mostrarAvisoMoedasInsuficientes(largura, altura) {
+      const aviso = this.add.text(largura / 2, altura / 2 + 130, 'Moedas insuficientes!', {
+        fontSize: '18px',
+        fontFamily: 'Arial',
+        color: '#ff5555',
+        backgroundColor: '#000000aa',
+        padding: { x: 10, y: 5 }
+      }).setOrigin(0.5).setDepth(12).setScrollFactor(0);
+
+      this.time.delayedCall(2000, () => {
+        aviso.destroy();
+      });
+
   }
 }
 
