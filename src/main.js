@@ -5,7 +5,7 @@ import Fase2 from './scenes/Fase2.js';
 import Fase3 from './scenes/Fase3.js';
 import Fase4 from './scenes/Fase4.js';
 import creditos_finais from './scenes/creditos_finais.js';
-
+import GameOver from './scenes/GameOver.js'; // ✅ importa a cena Game Over
 
 const config = {
   type: Phaser.AUTO,
@@ -27,8 +27,8 @@ const config = {
     Fase3,
     Fase4,
     creditos_finais,
+    GameOver // ✅ adiciona a cena aqui
   ]
 };
 
 const game = new Phaser.Game(config);
-
