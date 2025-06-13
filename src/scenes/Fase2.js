@@ -6,180 +6,92 @@ class Fase2 extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('vilao1', 'assets/Personagens/vilao1.png');
-    this.load.image('mapa_fase2', 'assets/Mapas/fase2a.png');
-    this.load.image('coracoes', 'assets/Personagens/hud_coracoes.png');
-    this.load.spritesheet('lina_frente', 'assets/Sprites/lina/andando/sprite-sheet-andando-de-frente.png', { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet('lina_costas', 'assets/Sprites/lina/andando/sprite_sheet_lina_andando_costas.png', { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet('lina_direita', 'assets/Sprites/lina/andando/sprite-sheet-lina-andando-direita.png', { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet('lina_esquerda', 'assets/Sprites/lina/andando/sprite-sheet-andando-esquerda.png', { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet('lina_ataque_frente', 'assets/Sprites/lina/atacando/sprite-sheet-ataque-de-frente.png', { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet('lina_ataque_costas', 'assets/Sprites/lina/atacando/sprite-sheet-atacando-de-costas.png', { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet('lina_ataque_direita', 'assets/Sprites/lina/atacando/sprite-sheet-ataque-direita.png', { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet('lina_ataque_esquerda', 'assets/Sprites/lina/atacando/sprite-sheet-ataque-esquerda.png', { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet('lina_morrendo', 'assets/Sprites/lina/morrendo/sprite-sheet-morrendo.png', { frameWidth: 128, frameHeight: 128 });
-    this.load.image('moeda', 'assets/Personagens/moeda.png');
+    this.load.image('mapa_fase2','assets/Mapas/fase2a.png');
+    this.load.image('coracoes','assets/Personagens/hud_coracoes.png');
+    this.load.image('moeda','assets/Personagens/moeda.png');
+    this.load.image('vilao1','assets/Personagens/vilao1.png');
+    this.load.spritesheet('lina_frente','assets/Sprites/lina/andando/sprite-sheet-andando-de-frente.png',{frameWidth:128,frameHeight:128});
+    this.load.spritesheet('lina_costas','assets/Sprites/lina/andando/sprite_sheet_lina_andando_costas.png',{frameWidth:128,frameHeight:128});
+    this.load.spritesheet('lina_direita','assets/Sprites/lina/andando/sprite-sheet-lina-andando-direita.png',{frameWidth:128,frameHeight:128});
+    this.load.spritesheet('lina_esquerda','assets/Sprites/lina/andando/sprite-sheet-andando-esquerda.png',{frameWidth:128,frameHeight:128});
+    this.load.spritesheet('lina_morrendo','assets/Sprites/lina/morrendo/sprite-sheet-morrendo.png',{frameWidth:128,frameHeight:128});
+    this.load.spritesheet('lina_ataque_frente','assets/Sprites/lina/atacando/sprite-sheet-ataque-de-frente.png',{frameWidth:128,frameHeight:128});
+    this.load.spritesheet('lina_ataque_costas','assets/Sprites/lina/atacando/sprite-sheet-atacando-de-costas.png',{frameWidth:128,frameHeight:128});
+    this.load.spritesheet('lina_ataque_direita','assets/Sprites/lina/atacando/sprite-sheet-ataque-direita.png',{frameWidth:128,frameHeight:128});
+    this.load.spritesheet('lina_ataque_esquerda','assets/Sprites/lina/atacando/sprite-sheet-ataque-esquerda.png',{frameWidth:128,frameHeight:128});
   }
 
   create() {
-    //loja
-    this.input.keyboard.on('keydown-C', () => {
-      if (!this.lojaAberta) {
-        this.abrirLoja();
+    this.add.image(0,0,'mapa_fase2').setOrigin(0).setDisplaySize(1920,1920);
+    this.physics.world.setBounds(0,0,1920,1920);
+    this.cameras.main.setBounds(0,0,1920,1920);
+
+    this.lina = this.physics.add.sprite(960,960,'lina_frente').setScale(0.8).setCollideWorldBounds(true);
+    this.cameras.main.startFollow(this.lina);
+    this.vida = 100; this.danoExtra = 0; this.temEscudo = false; this.morta = false; this.transicaoFeita = false;
+    this.totalOgrosGerados = 0; this.maxOgros = 15;
+
+    this.criarAnimacoes();
+    this.criarControles();
+    this.criarOgros();
+
+    this.spawnTimer = this.time.addEvent({
+      delay: 4000, loop: true, callback: () => {
+        if (this.totalOgrosGerados < this.maxOgros) this.spawnNovaOnda();
       }
     });
-      this.input.keyboard.enabled = true;
-      this.input.keyboard.target = window;
-      this.moedasColetadas = 0;
 
-    document.body.style.overflow = 'hidden';
-    document.body.style.margin = '0';
-    document.body.style.padding = '0';
-    document.documentElement.style.margin = '0';
-    document.documentElement.style.padding = '0';
-
-    this.scale.resize(window.innerWidth, window.innerHeight);
-    const largura = 1920;
-    const altura = 1920;
-
-    this.add.image(0, 0, 'mapa_fase2')
-      .setOrigin(0)
-      .setDepth(-2)
-      .setDisplaySize(largura, altura);
-
-    this.physics.world.setBounds(0, 0, largura, altura);
-    this.cameras.main.setBounds(0, 0, largura, altura);
-
-    this.add.text(largura / 2, 30, '', {
-      fontSize: '20px',
-      color: '#ffffff'
-    }).setOrigin(0.5).setDepth(2);
-
-    this.iniciarFase();
-  }
-
-  iniciarFase() {
-    this.lina = this.physics.add.sprite(960, 960, 'lina_frente', 0).setScale(0.8);
-    this.lina.setCollideWorldBounds(true);
-    this.lina.setImmovable(true);
-    this.vida = 100;
-    this.direcaoLina = 'frente';
-
-    this.cameras.main.startFollow(this.lina);
-
-    this.anims.create({ key: 'andar_frente', frames: this.anims.generateFrameNumbers('lina_frente', { start: 0, end: 7 }), frameRate: 8, repeat: -1 });
-    this.anims.create({ key: 'andar_costas', frames: this.anims.generateFrameNumbers('lina_costas', { start: 0, end: 7 }), frameRate: 8, repeat: -1 });
-    this.anims.create({ key: 'andar_direita', frames: this.anims.generateFrameNumbers('lina_direita', { start: 0, end: 7 }), frameRate: 8, repeat: -1 });
-    this.anims.create({ key: 'andar_esquerda', frames: this.anims.generateFrameNumbers('lina_esquerda', { start: 0, end: 7 }), frameRate: 8, repeat: -1 });
-    this.anims.create({ key: 'ataque_frente', frames: this.anims.generateFrameNumbers('lina_ataque_frente', { start: 0, end: 7 }), frameRate: 8, repeat: -1 });
-    this.anims.create({ key: 'ataque_costas', frames: this.anims.generateFrameNumbers('lina_ataque_costas', { start: 0, end: 7 }), frameRate: 8, repeat: -1 });
-    this.anims.create({ key: 'ataque_direita', frames: this.anims.generateFrameNumbers('lina_ataque_direita', { start: 0, end: 7 }), frameRate: 8, repeat: -1 });
-    this.anims.create({ key: 'ataque_esquerda', frames: this.anims.generateFrameNumbers('lina_ataque_esquerda', { start: 0, end: 7 }), frameRate: 8, repeat: -1 });
-    this.anims.create({ key: 'lina_morrendo', frames: this.anims.generateFrameNumbers('lina_morrendo', { start: 0, end: 5 }), frameRate: 8, repeat: 1 });
-
-    //adicionando tecla de compra 
-    this.teclas = this.input.keyboard.addKeys({ cima: 'W', baixo: 'S', esquerda: 'A', direita: 'D', atacar: 'SPACE', lojinha: Phaser.Input.Keyboard.KeyCodes.C  });
-
-    this.lojaAberta = false;
-    this.temEscudo = false;
-    this.danoExtra = false;    
-
-    this.coracoes = [];
-    const totalCoracoes = 5;
-    for (let i = 0; i < totalCoracoes; i++) {
-      const coracao = this.add.image(0.5 + i * 45, 0.5, 'coracoes')
-        .setScale(0.06)
-        .setScrollFactor(0)
-        .setDepth(2)
-        .setOrigin(0, 0);
-      this.coracoes.push(coracao);
-    }
-
-    this.teclas = this.input.keyboard.addKeys({ cima: 'W', baixo: 'S', esquerda: 'A', direita: 'D', atacar: 'SPACE' });
-
-    this.ogros = [];
-    this.spawnIndex = 0;
-    this.spawnOffsets = [[200, -100], [-200, -100], [200, 100], [-200, 100], [150, -150], [-150, 150]];
-
-    this.spawnOgroWave(2);
-    this.time.addEvent({ delay: 7000, callback: () => this.spawnOgroWave(2) });
-    this.time.addEvent({ delay: 14000, callback: () => this.spawnOgroWave(2) });
-  }
-
-  atualizarCoracoes() {
-    const coracoesVisiveis = Math.ceil(this.vida / 20);
-    this.coracoes.forEach((c, i) => {
-      c.setVisible(i < coracoesVisiveis);
+    this.input.keyboard.on('keydown-C', ()=> {
+      if (!this.scene.isActive('LojaScene')) {
+        this.scene.launch('LojaScene',{parent:this});
+        this.scene.pause();
+      }
     });
   }
 
-  spawnOgroWave(qtd) {
-    for (let i = 0; i < qtd && this.spawnIndex < this.spawnOffsets.length; i++) {
-      const [dx, dy] = this.spawnOffsets[this.spawnIndex];
-      const ogro = this.physics.add.sprite(960 + dx, 960 + dy, 'vilao1').setScale(0.11);
-      ogro.vida = 25;
-      ogro.setImmovable(true);
-      ogro.setPushable(false);
-      ogro.barraVida = this.add.graphics();
-      ogro.lastAttackTime = 0;
+  criarAnimacoes() {
+    [['andar_frente','lina_frente'],['andar_costas','lina_costas'],['andar_direita','lina_direita'],['andar_esquerda','lina_esquerda']].forEach(([key,sprite]) => {
+      this.anims.create({ key, frames: this.anims.generateFrameNumbers(sprite,{start:0,end:7}), frameRate:8, repeat:-1 });
+    });
+    this.anims.create({ key:'lina_morrendo', frames: this.anims.generateFrameNumbers('lina_morrendo',{start:0,end:5}), frameRate:8 });
+    this.anims.create({ key:'ataque_frente', frames: this.anims.generateFrameNumbers('lina_ataque_frente',{start:0,end:7}), frameRate:10 });
+    this.anims.create({ key:'ataque_costas', frames: this.anims.generateFrameNumbers('lina_ataque_costas',{start:0,end:7}), frameRate:10 });
+    this.anims.create({ key:'ataque_direita', frames: this.anims.generateFrameNumbers('lina_ataque_direita',{start:0,end:7}), frameRate:10 });
+    this.anims.create({ key:'ataque_esquerda', frames: this.anims.generateFrameNumbers('lina_ataque_esquerda',{start:0,end:7}), frameRate:10 });
+  }
 
-      this.ogros.push(ogro);
-      this.spawnIndex++;
+  criarControles() {
+    this.teclas = this.input.keyboard.addKeys({ cima:'W',baixo:'S',esquerda:'A',direita:'D', atacar:'SPACE' });
+  }
 
-      this.physics.add.collider(this.lina, ogro, () => {
-        const now = this.time.now;
-        if (now - ogro.lastAttackTime > 1000 && this.vida > 0) {
-          this.vida -= 25;
-          this.atualizarCoracoes();
-          this.lina.setTint(0xff0000);
-          this.time.delayedCall(200, () => this.lina.clearTint());
-          ogro.lastAttackTime = now;
-          if (this.vida <= 0) {
-            this.lina.anims.play('lina_morrendo', true);
-            this.lina.setScale(0.8);
-            this.lina.once('animationcomplete', () => {
-              this.scene.restart();
-            });
-            this.vida = -9999;
-            return;
-          }
-        }
-      }, null, this);
+  atualizarHUD() {
+    this.textoMoedas.setText(`🪙 ${this.moedasColetadas}`);
+    const visiveis = Math.ceil(this.vida/20);
+    this.coracoes.forEach((c,i)=>c.setVisible(i<visiveis));
+  }
+
+  criarOgros() {
+    this.ogros = this.physics.add.group();
+  }
+
+  spawnNovaOnda() {
+      const posicoes = [
+        [200,-100],[-200,-100],[200,100],[-200,100],[150,-150],[-150,150],
+        [250,250],[-250,250],[0,-250],[250,0],[-250,0],[0,250],
+        [300,-300],[-300,300],[300,0]
+      ];
+      Phaser.Utils.Array.Shuffle(posicoes);
+      const quantidade = Math.min(3, this.maxOgros - this.totalOgrosGerados);
+      for (let i = 0; i < quantidade; i++) {
+        const [dx, dy] = posicoes[this.totalOgrosGerados];
+        const ogro = this.ogros.create(960+dx,960+dy,'vilao1').setScale(0.1);
+        ogro.vida = 25;
+        ogro.barraVida = this.add.graphics().setDepth(1);
+        this.totalOgrosGerados++;
+      }
     }
 
-    //moeda
-      this.moedas = this.physics.add.group();
-
-      const posicoesMoedas = [
-        { x: 700, y: 800 },
-        { x: 1100, y: 1000 },
-        { x: 1300, y: 900 },
-      ];
-      posicoesMoedas.forEach(pos => {
-        const moeda = this.moedas.create(pos.x, pos.y, 'moeda').setScale(0.06).setDepth(1);
-        moeda.body.setAllowGravity(false);
-      });
-
-      this.moedasColetadas = 0;
-
-      this.physics.add.overlap(this.lina, this.moedas, (lina, moeda) => {
-      moeda.destroy();
-      this.moedasColetadas++;
-      console.log('Moedas: ', this.moedasColetadas);
-    }, null, this);
-
-      this.textoMoedasHUD = this.add.text(this.cameras.main.width / 2, 20, `🪙 ${this.moedasColetadas}`, {
-      fontSize: '20px',
-      fontFamily: 'Arial',
-      color: '#ffffff',
-      backgroundColor: '#00000066',
-      padding: { x: 10, y: 5 }
-    })
-    .setOrigin(0.5, 0) 
-    .setScrollFactor(0)
-    .setDepth(30);
-
-  }
+//----------------------------------------------------------------
 
   update() {
     if (!this.lina) return;

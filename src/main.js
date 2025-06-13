@@ -31,7 +31,7 @@ const config = {
     creditos_finais,
     LojaScene,
     Intro,
-    GameOver // ✅ adiciona a cena aqui
+    GameOver 
   ]
 };
 
