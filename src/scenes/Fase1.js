@@ -2,45 +2,26 @@ import Phaser from 'phaser';
 
 class LojaScene extends Phaser.Scene {
   constructor() { super('LojaScene'); }
-
   init(data) { this.parent = data.parent; }
 
   create() {
     const { width, height } = this.scale;
+    this.add.rectangle(width/2, height/2, width*0.6, height*0.6, 0x222222, 0.6).setStrokeStyle(4, 0xffffff).setDepth(1);
+    this.add.text(width/2, height/2-150, '🛒 LOJA', { fontSize: '32px', fontFamily: 'Arial', color: '#fff' }).setOrigin(0.5).setDepth(2);
+    this.aviso = this.add.text(width/2, height/2+150, '', { fontSize: '18px', color: '#ff5555' }).setOrigin(0.5).setDepth(3);
 
-    this.add.rectangle(width/2, height/2, width*0.6, height*0.6, 0x222222, 0.6)
-      .setStrokeStyle(4, 0xffffff).setDepth(1);
-
-    this.add.text(width/2, height/2-150, '🛒 LOJA', {
-      fontSize: '32px', fontFamily: 'Arial', color: '#fff'
-    }).setOrigin(0.5).setDepth(2);
-
-    this.aviso = this.add.text(width/2, height/2+150, '', {
-      fontSize: '18px', color: '#ff5555'
-    }).setOrigin(0.5).setDepth(3);
-
-    this.criarBotao(height/2-40, '+1 Vida (2 moedas)', 2, () => {
-      this.parent.vida = Math.min(this.parent.vida+20, 100);
-    });
-    this.criarBotao(height/2+20, 'Escudo (1 moedas)', 1, () => {
-      this.parent.temEscudo = true;
-    });
-    this.criarBotao(height/2+80, '+Dano (3 moedas)', 3, () => {
-      this.parent.danoExtra += 5;
-    });
+    this.criarBotao(height/2-40, '+1 Vida (2 moedas)', 2, () => { this.parent.vida = Math.min(this.parent.vida+20, 100); });
+    this.criarBotao(height/2+20, 'Escudo (1 moedas)', 1, () => { this.parent.temEscudo = true; });
+    this.criarBotao(height/2+80, '+Dano (3 moedas)', 3, () => { this.parent.danoExtra += 5; });
 
     this.input.keyboard.on('keydown-C', () => this.fecharLoja());
   }
 
   criarBotao(y, texto, custo, efeito) {
-    const botao = this.add.text(this.scale.width/2, y, texto, {
-      fontSize: '18px', backgroundColor: '#333', color: '#fff', padding:{x:20,y:10}
-    }).setOrigin(0.5).setInteractive().setDepth(2);
-
+    const botao = this.add.text(this.scale.width/2, y, texto, { fontSize: '18px', backgroundColor: '#333', color: '#fff', padding:{x:20,y:10} }).setOrigin(0.5).setInteractive().setDepth(2);
     botao.on('pointerdown', () => {
       if (this.parent.moedasColetadas >= custo) {
-        efeito();
-        this.parent.moedasColetadas -= custo;
+        efeito(); this.parent.moedasColetadas -= custo;
         this.parent.atualizarHUD();
         this.fecharLoja();
       } else {
@@ -50,10 +31,7 @@ class LojaScene extends Phaser.Scene {
     });
   }
 
-  fecharLoja() {
-    this.scene.stop();
-    this.parent.scene.resume();
-  }
+  fecharLoja() { this.scene.stop(); this.parent.scene.resume(); }
 }
 
 class Fase1 extends Phaser.Scene {
@@ -69,6 +47,10 @@ class Fase1 extends Phaser.Scene {
     this.load.spritesheet('lina_direita','assets/Sprites/lina/andando/sprite-sheet-lina-andando-direita.png',{frameWidth:128,frameHeight:128});
     this.load.spritesheet('lina_esquerda','assets/Sprites/lina/andando/sprite-sheet-andando-esquerda.png',{frameWidth:128,frameHeight:128});
     this.load.spritesheet('lina_morrendo','assets/Sprites/lina/morrendo/sprite-sheet-morrendo.png',{frameWidth:128,frameHeight:128});
+    this.load.spritesheet('lina_ataque_frente','assets/Sprites/lina/atacando/sprite-sheet-ataque-de-frente.png',{frameWidth:128,frameHeight:128});
+    this.load.spritesheet('lina_ataque_costas','assets/Sprites/lina/atacando/sprite-sheet-atacando-de-costas.png',{frameWidth:128,frameHeight:128});
+    this.load.spritesheet('lina_ataque_direita','assets/Sprites/lina/atacando/sprite-sheet-ataque-direita.png',{frameWidth:128,frameHeight:128});
+    this.load.spritesheet('lina_ataque_esquerda','assets/Sprites/lina/atacando/sprite-sheet-ataque-esquerda.png',{frameWidth:128,frameHeight:128});
   }
 
   create() {
@@ -78,14 +60,20 @@ class Fase1 extends Phaser.Scene {
 
     this.lina = this.physics.add.sprite(960,960,'lina_frente').setScale(0.8).setCollideWorldBounds(true);
     this.cameras.main.startFollow(this.lina);
-    this.vida = 100; this.danoExtra = 0; this.temEscudo = false; this.morta = false;
-    this.transicaoFeita = false; 
+    this.vida = 100; this.danoExtra = 0; this.temEscudo = false; this.morta = false; this.transicaoFeita = false;
+    this.totalOgrosGerados = 0; this.maxOgros = 15;
 
     this.criarAnimacoes();
     this.criarControles();
     this.criarHUD();
     this.criarMoedas();
     this.criarOgros();
+
+    this.spawnTimer = this.time.addEvent({
+      delay: 4000, loop: true, callback: () => {
+        if (this.totalOgrosGerados < this.maxOgros) this.spawnNovaOnda();
+      }
+    });
 
     this.input.keyboard.on('keydown-C', ()=> {
       if (!this.scene.isActive('LojaScene')) {
@@ -96,11 +84,14 @@ class Fase1 extends Phaser.Scene {
   }
 
   criarAnimacoes() {
-    [['andar_frente','lina_frente'],['andar_costas','lina_costas'],['andar_direita','lina_direita'],['andar_esquerda','lina_esquerda']]
-    .forEach(([key,sprite]) => {
+    [['andar_frente','lina_frente'],['andar_costas','lina_costas'],['andar_direita','lina_direita'],['andar_esquerda','lina_esquerda']].forEach(([key,sprite]) => {
       this.anims.create({ key, frames: this.anims.generateFrameNumbers(sprite,{start:0,end:7}), frameRate:8, repeat:-1 });
     });
     this.anims.create({ key:'lina_morrendo', frames: this.anims.generateFrameNumbers('lina_morrendo',{start:0,end:5}), frameRate:8 });
+    this.anims.create({ key:'ataque_frente', frames: this.anims.generateFrameNumbers('lina_ataque_frente',{start:0,end:7}), frameRate:10 });
+    this.anims.create({ key:'ataque_costas', frames: this.anims.generateFrameNumbers('lina_ataque_costas',{start:0,end:7}), frameRate:10 });
+    this.anims.create({ key:'ataque_direita', frames: this.anims.generateFrameNumbers('lina_ataque_direita',{start:0,end:7}), frameRate:10 });
+    this.anims.create({ key:'ataque_esquerda', frames: this.anims.generateFrameNumbers('lina_ataque_esquerda',{start:0,end:7}), frameRate:10 });
   }
 
   criarControles() {
@@ -135,27 +126,45 @@ class Fase1 extends Phaser.Scene {
 
   criarOgros() {
     this.ogros = this.physics.add.group();
-    [[200,-100],[-200,-100],[200,100],[-200,100],[150,-150],[-150,150]].forEach(([dx,dy]) => {
+  }
+
+  spawnNovaOnda() {
+    const posicoes = [
+      [200,-100],[-200,-100],[200,100],[-200,100],[150,-150],[-150,150],
+      [250,250],[-250,250],[0,-250],[250,0],[-250,0],[0,250],
+      [300,-300],[-300,300],[300,0]
+    ];
+    Phaser.Utils.Array.Shuffle(posicoes);
+    const quantidade = Math.min(3, this.maxOgros - this.totalOgrosGerados);
+    for (let i = 0; i < quantidade; i++) {
+      const [dx, dy] = posicoes[this.totalOgrosGerados];
       const ogro = this.ogros.create(960+dx,960+dy,'vilao1').setScale(0.1);
       ogro.vida = 25;
       ogro.barraVida = this.add.graphics().setDepth(1);
-    });
+      this.totalOgrosGerados++;
+    }
   }
 
   update() {
     if (this.morta) return;
-    const spd = 200;
-    let vx=0, vy=0;
+    const spd = 200; let vx=0, vy=0;
 
-    if (this.teclas.cima.isDown) { vy=-spd; this.playAnim('andar_costas'); }
-    else if (this.teclas.baixo.isDown) { vy=spd; this.playAnim('andar_frente'); }
-    else if (this.teclas.direita.isDown) { vx=spd; this.playAnim('andar_direita'); }
-    else if (this.teclas.esquerda.isDown) { vx=-spd; this.playAnim('andar_esquerda'); }
+    if (this.teclas.cima.isDown) { vy=-spd; this.playAnim('andar_costas'); this.direcao='costas'; }
+    else if (this.teclas.baixo.isDown) { vy=spd; this.playAnim('andar_frente'); this.direcao='frente'; }
+    else if (this.teclas.direita.isDown) { vx=spd; this.playAnim('andar_direita'); this.direcao='direita'; }
+    else if (this.teclas.esquerda.isDown) { vx=-spd; this.playAnim('andar_esquerda'); this.direcao='esquerda'; }
     else this.lina.anims.stop();
 
     this.lina.setVelocity(vx, vy);
 
     if (Phaser.Input.Keyboard.JustDown(this.teclas.atacar)) {
+      const animAtk = {
+        'frente':'ataque_frente', 'costas':'ataque_costas',
+        'direita':'ataque_direita', 'esquerda':'ataque_esquerda'
+      }[this.direcao || 'frente'];
+      this.lina.play(animAtk);
+      this.time.delayedCall(400, ()=> this.playAnim('andar_frente'));
+
       this.ogros.getChildren().forEach(ogro => {
         if (Phaser.Math.Distance.Between(this.lina.x,this.lina.y,ogro.x,ogro.y)<80) {
           ogro.vida -= (5 + this.danoExtra);
@@ -167,7 +176,6 @@ class Fase1 extends Phaser.Scene {
     this.ogros.getChildren().forEach(ogro => {
       const dist = Phaser.Math.Distance.Between(this.lina.x,this.lina.y,ogro.x,ogro.y);
       if (dist>20) this.physics.moveToObject(ogro,this.lina,25); else ogro.setVelocity(0);
-
       ogro.barraVida.clear();
       const p = Math.max(ogro.vida/25,0);
       ogro.barraVida.fillStyle(0x000000).fillRect(ogro.x-30,ogro.y-ogro.displayHeight/2-15,60,8);
@@ -184,12 +192,10 @@ class Fase1 extends Phaser.Scene {
       }
     });
 
-    if (this.ogros.countActive() === 0 && !this.transicaoFeita) {
+    if (this.totalOgrosGerados === this.maxOgros && this.ogros.countActive() === 0 && !this.transicaoFeita) {
       this.transicaoFeita = true;
       this.cameras.main.fadeOut(1000,0,0,0);
-      this.cameras.main.once('camerafadeoutcomplete',()=>{
-        this.scene.start('Fase2');
-      });
+      this.cameras.main.once('camerafadeoutcomplete',()=>{ this.scene.start('Fase2'); });
     }
   }
 
