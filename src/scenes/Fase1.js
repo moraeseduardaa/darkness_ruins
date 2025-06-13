@@ -79,7 +79,7 @@ class Fase1 extends Phaser.Scene {
     this.lina = this.physics.add.sprite(960,960,'lina_frente').setScale(0.8).setCollideWorldBounds(true);
     this.cameras.main.startFollow(this.lina);
     this.vida = 100; this.danoExtra = 0; this.temEscudo = false; this.morta = false;
-    this.transicaoFeita = false; // Novo controle de transição
+    this.transicaoFeita = false; 
 
     this.criarAnimacoes();
     this.criarControles();

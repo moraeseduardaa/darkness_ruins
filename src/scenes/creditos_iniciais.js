@@ -34,7 +34,7 @@ class CreditosIniciais extends Phaser.Scene {
       .setInteractive({ useHandCursor: true });
 
     botaoPlay.on('pointerdown', () => {
-      this.scene.start('Fase1');
+      this.scene.start('Intro');
     });
 
     botaoPlay.on('pointerover', () => botaoPlay.setScale(escalaHoverPlay));
