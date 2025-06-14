@@ -187,7 +187,7 @@ class Fase1 extends Phaser.Scene {
         if (this.vida<=0) {
           this.morta = true;
           this.lina.anims.play('lina_morrendo',true);
-          this.lina.once('animationcomplete',()=>this.scene.start('MenuPrincipal'));
+          this.lina.once('animationcomplete',()=>this.scene.restart());
         }
       }
     });
@@ -195,7 +195,13 @@ class Fase1 extends Phaser.Scene {
     if (this.totalOgrosGerados === this.maxOgros && this.ogros.countActive() === 0 && !this.transicaoFeita) {
       this.transicaoFeita = true;
       this.cameras.main.fadeOut(1000,0,0,0);
-      this.cameras.main.once('camerafadeoutcomplete',()=>{ this.scene.start('Fase2'); });
+      this.cameras.main.once('camerafadeoutcomplete',()=>{ 
+      this.scene.start('Fase2', {
+        vida: this.vida,
+        danoExtra: this.danoExtra,
+        temEscudo: this.temEscudo,
+        moedasColetadas: this.moedasColetadas
+      }); });
     }
   }
 
