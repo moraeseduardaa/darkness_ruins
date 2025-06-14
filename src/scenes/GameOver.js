@@ -23,7 +23,7 @@ class GameOver extends Phaser.Scene {
     const botao = this.add.rectangle(width / 2, height / 2 + 155, 380, 90, 0x000000, 0).setInteractive();
 
     botao.on('pointerdown', () => {
-      this.scene.start('CreditosIniciais'); // volta pro menu
+      this.scene.start('Fase1'); // volta pro menu
     });
 
     botao.on('pointerover', () => {
