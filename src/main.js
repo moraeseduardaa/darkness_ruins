@@ -6,8 +6,8 @@ import Fase2 from './scenes/Fase2.js';
 import Fase3 from './scenes/Fase3.js';
 import Fase4 from './scenes/Fase4.js';
 import creditos_finais from './scenes/creditos_finais.js';
-import GameOver from './scenes/GameOver.js'; 
-
+import GameOver from './scenes/GameOver.js';
+import Instrucoes from './scenes/Instrucoes.js'; // ✅ nova cena adicionada aqui
 
 const config = {
   type: Phaser.AUTO,
@@ -24,6 +24,7 @@ const config = {
   },
   scene: [
     CreditosIniciais,
+    Instrucoes,       // ✅ adicionada aqui também
     Fase1,
     Fase2,
     Fase3,
@@ -31,7 +32,7 @@ const config = {
     creditos_finais,
     LojaScene,
     Intro,
-    GameOver 
+    GameOver
   ]
 };
 
