@@ -37,6 +37,7 @@ class Fase3 extends Phaser.Scene {
     this.lina = this.physics.add.sprite(960,960,'lina_frente').setScale(0.8).setCollideWorldBounds(true);
     this.cameras.main.startFollow(this.lina);
     this.morta = false;
+    this.atacando = false;
     this.transicaoFeita = false;
 
     this.criarAnimacoes();
@@ -111,18 +112,25 @@ class Fase3 extends Phaser.Scene {
     else if (this.teclas.baixo.isDown) { vy=spd; this.playAnim('andar_frente'); this.direcao='frente'; }
     else if (this.teclas.direita.isDown) { vx=spd; this.playAnim('andar_direita'); this.direcao='direita'; }
     else if (this.teclas.esquerda.isDown) { vx=-spd; this.playAnim('andar_esquerda'); this.direcao='esquerda'; }
+    else if (!this.atacando) this.lina.anims.stop();
     else this.lina.anims.stop();
 
     this.lina.setVelocity(vx, vy);
 
-    if (Phaser.Input.Keyboard.JustDown(this.teclas.atacar)) {
-      const animAtk = {
+    if (Phaser.Input.Keyboard.JustDown(this.teclas.atacar) && !this.atacando && !this.morta) {
+      this.atacando = true;      const animAtk = {
         'frente':'ataque_frente', 'costas':'ataque_costas',
         'direita':'ataque_direita', 'esquerda':'ataque_esquerda'
       }[this.direcao || 'frente'];
       this.lina.play(animAtk);
-      this.time.delayedCall(400, ()=> this.playAnim('andar_frente'));
 
+      this.time.delayedCall(400, () => {
+        this.atacando = false;
+        if (!this.morta) {
+          this.playAnim('andar_frente');
+        }
+      });
+      
       this.ogros.getChildren().forEach(ogro => {
         if (Phaser.Math.Distance.Between(this.lina.x,this.lina.y,ogro.x,ogro.y)<80) {
           ogro.vida -= (5 + this.danoExtra);
@@ -143,8 +151,9 @@ class Fase3 extends Phaser.Scene {
       if (dist<120 && this.vida>0) {
       this.vida -= this.temEscudo?0:0.1;
       this.atualizarHUD();
-      if (this.vida<=0) {
+      if (this.vida<=0 && !this.morta) { 
         this.morta = true;
+        this.atacando = false; 
         this.lina.anims.play('lina_morrendo',true);
         this.lina.once('animationcomplete',()=>{
         this.scene.start('Fase1');
