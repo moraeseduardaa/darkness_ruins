@@ -78,17 +78,31 @@ class Fase3 extends Phaser.Scene {
 
   criarMoedas() {
     this.moedas = this.physics.add.group();
-    [[300,300],[600,1400],[1000,800],[1600,1600]].forEach(([x,y]) => {
-      const moeda = this.moedas.create(x,y,'moeda').setScale(0.06);
+  
+    const posicoes = [
+      [200, 200],     
+      [1700, 200],   
+      [200, 1700],    
+      [1700, 1700],  
+      [960, 960],  
+      [500, 1000],   
+      [1400, 1000], 
+      [960, 400], 
+      [960, 1500],
+      [300, 300]      
+    ];
+    
+    posicoes.forEach(([x, y]) => {
+      const moeda = this.moedas.create(x, y, 'moeda').setScale(0.06);
       moeda.body.setAllowGravity(false);
     });
-    this.physics.add.overlap(this.lina,this.moedas,(lina,moeda)=>{
+  
+    this.physics.add.overlap(this.lina, this.moedas, (lina, moeda) => {
       moeda.destroy();
       this.moedasColetadas++;
       this.atualizarHUD();
     });
   }
-
   atualizarHUD() {
     this.textoMoedas.setText(`🪙 ${this.moedasColetadas}`);
     const visiveis = Math.ceil(this.vida / 20);
@@ -97,13 +111,17 @@ class Fase3 extends Phaser.Scene {
 
   criarOgros() {
     this.ogros = this.physics.add.group();
-    [[500,300],[1400,600],[1200,1400],[600,1600]].forEach(([x,y]) => {
-      const ogro = this.ogros.create(x,y,'vilao1').setScale(0.1);
-      ogro.vida = 35;
+    [
+      [250,250],[1700,300],[1500,1500],[500,1700],
+      [900,600],[600,1300],[1750,1750],[1300,400],
+      [350,1750],[1850,1100],[1100,1850],[1850,1850],
+      [800,800],[1600,800],[800,1600],[1600,1600]
+    ].forEach(([x,y]) => {
+      const ogro = this.ogros.create(x,y,'vilao1').setScale(0.12);
+      ogro.vida = 40;
       ogro.barraVida = this.add.graphics().setDepth(1);
     });
   }
-
   update() {
     if (this.morta) return;
     const spd = 200; let vx=0, vy=0;
@@ -148,7 +166,7 @@ class Fase3 extends Phaser.Scene {
       ogro.barraVida.fillStyle(0x000000).fillRect(ogro.x-30,ogro.y-ogro.displayHeight/2-15,60,8);
       ogro.barraVida.fillStyle(0xff0000).fillRect(ogro.x-29,ogro.y-ogro.displayHeight/2-14,58*p,6);
 
-      if (dist<75 && this.vida>0) {
+      if (dist<70 && this.vida>0) {
       this.vida -= this.temEscudo?0:0.1;
       this.atualizarHUD();
       if (this.vida<=0 && !this.morta) { 

@@ -78,11 +78,26 @@ class Fase2 extends Phaser.Scene {
 
   criarMoedas() {
     this.moedas = this.physics.add.group();
-    [[400,400],[1400,1000],[1000,700],[1200,1300]].forEach(([x,y]) => {
-      const moeda = this.moedas.create(x,y,'moeda').setScale(0.06);
+  
+    const posicoes = [
+      [200, 200],     
+      [1700, 200],   
+      [200, 1700],    
+      [1700, 1700],  
+      [960, 960],  
+      [500, 1000],   
+      [1400, 1000], 
+      [960, 400], 
+      [960, 1500],
+      [300, 300]      
+    ];
+    
+    posicoes.forEach(([x, y]) => {
+      const moeda = this.moedas.create(x, y, 'moeda').setScale(0.06);
       moeda.body.setAllowGravity(false);
     });
-    this.physics.add.overlap(this.lina,this.moedas,(lina,moeda)=>{
+  
+    this.physics.add.overlap(this.lina, this.moedas, (lina, moeda) => {
       moeda.destroy();
       this.moedasColetadas++;
       this.atualizarHUD();
@@ -97,7 +112,11 @@ class Fase2 extends Phaser.Scene {
 
   criarOgros() {
     this.ogros = this.physics.add.group();
-    [[300,300],[1600,400],[1400,1400],[600,1600]].forEach(([x,y]) => {
+    [
+      [300,300],[1600,400],[1400,1400],[600,1600],
+      [800,500],[500,1200],[1700,1700],[1200,300],
+      [400,1700],[1800,1000],[1000,1800],[1800,1800]
+    ].forEach(([x,y]) => {
       const ogro = this.ogros.create(x,y,'vilao1').setScale(0.1);
       ogro.vida = 30;
       ogro.barraVida = this.add.graphics().setDepth(1);

@@ -78,11 +78,26 @@ class Fase4 extends Phaser.Scene {
 
   criarMoedas() {
     this.moedas = this.physics.add.group();
-    [[600,400],[1300,800],[800,1400]].forEach(([x,y]) => {
-      const moeda = this.moedas.create(x,y,'moeda').setScale(0.06);
+  
+    const posicoes = [
+      [200, 200],     
+      [1700, 200],   
+      [200, 1700],    
+      [1700, 1700],  
+      [960, 960],  
+      [500, 1000],   
+      [1400, 1000], 
+      [960, 400], 
+      [960, 1500],
+      [300, 300]      
+    ];
+    
+    posicoes.forEach(([x, y]) => {
+      const moeda = this.moedas.create(x, y, 'moeda').setScale(0.06);
       moeda.body.setAllowGravity(false);
     });
-    this.physics.add.overlap(this.lina,this.moedas,(lina,moeda)=>{
+  
+    this.physics.add.overlap(this.lina, this.moedas, (lina, moeda) => {
       moeda.destroy();
       this.moedasColetadas++;
       this.atualizarHUD();
