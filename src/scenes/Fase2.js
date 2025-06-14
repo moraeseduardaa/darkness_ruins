@@ -149,7 +149,7 @@ update() {
       ogro.barraVida.fillStyle(0x000000).fillRect(ogro.x-30,ogro.y-ogro.displayHeight/2-15,60,8);
       ogro.barraVida.fillStyle(0xff0000).fillRect(ogro.x-29,ogro.y-ogro.displayHeight/2-14,58*p,6);
 
-      if (dist<120 && this.vida>0) {
+      if (dist<60 && this.vida>0) {
       this.vida -= this.temEscudo?0:0.1;
       this.atualizarHUD();
       if (this.vida<=0 && !this.morta) { 
