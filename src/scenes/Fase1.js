@@ -207,12 +207,19 @@ class Fase1 extends Phaser.Scene {
       if (dist<50 && this.vida>0) {
         this.vida -= this.temEscudo?0:0.1;
         this.atualizarHUD();
-        if (this.vida<=0 && !this.morta) { 
+        if (this.vida <= 0 && !this.morta) {
           this.morta = true;
-          this.atacando = false; 
-          this.lina.anims.play('lina_morrendo',true);
-          this.lina.once('animationcomplete',()=>this.scene.restart());
+          this.atacando = false;
+          this.lina.setVelocity(0);
+          this.lina.anims.stop(); 
+          this.lina.anims.play('lina_morrendo', true);
+          this.lina.once('animationcomplete', () => {
+            this.scene.start('GameOver', {
+              moedasColetadas: this.moedasColetadas
+            });
+          });
         }
+        
       }
     });
 

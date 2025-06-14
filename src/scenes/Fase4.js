@@ -143,27 +143,36 @@ if (this.morta) return;
         }
       });
       
-    if (Phaser.Input.Keyboard.JustDown(this.teclas.atacar)) {
-      if (Phaser.Math.Distance.Between(this.lina.x,this.lina.y,this.ghorn.x,this.ghorn.y)<100) {
-        this.ghorn.vida -= (5 + this.danoExtra);
-        if (this.ghorn.vida <= 0) {
-          this.ghorn.barraVida.destroy();
-          this.ghorn.destroy();
-          this.ghorn = null;
-
-          this.cameras.main.fadeOut(1000,0,0,0);
-          this.cameras.main.once('camerafadeoutcomplete',()=>{
-            // Substitua por 'TelaFinal' ou o que quiser
-            this.scene.start('CreditosIniciais', {
-              vida: this.vida,
-              danoExtra: this.danoExtra,
-              temEscudo: this.temEscudo,
-              moedasColetadas: this.moedasColetadas
+      if (Phaser.Input.Keyboard.JustDown(this.teclas.atacar) && !this.atacando && !this.morta) {
+        this.atacando = true;
+        const animAtk = {
+          'frente':'ataque_frente', 'costas':'ataque_costas',
+          'direita':'ataque_direita', 'esquerda':'ataque_esquerda'
+        }[this.direcao || 'frente'];
+        this.lina.play(animAtk);
+      
+        this.time.delayedCall(400, () => {
+          this.atacando = false;
+          if (!this.morta) {
+            this.playAnim('andar_frente');
+          }
+        });
+      
+        if (Phaser.Math.Distance.Between(this.lina.x, this.lina.y, this.ghorn.x, this.ghorn.y) < 100) {
+          this.ghorn.vida -= (5 + this.danoExtra);
+          if (this.ghorn.vida <= 0) {
+            this.ghorn.barraVida.destroy();
+            this.ghorn.destroy();
+            this.ghorn = null;
+      
+            this.cameras.main.fadeOut(1000, 0, 0, 0);
+            this.cameras.main.once('camerafadeoutcomplete', () => {
+              this.scene.start('CreditosFinais');
             });
-          });
+          }
         }
       }
-    }
+      
   }
 
     const dist = Phaser.Math.Distance.Between(this.lina.x,this.lina.y,this.ghorn.x,this.ghorn.y);
@@ -181,14 +190,19 @@ if (this.morta) return;
     if (dist<60 && this.vida>0) {
       this.vida -= this.temEscudo?0:0.1;
       this.atualizarHUD();
-      if (this.vida<=0 && !this.morta) { 
+      if (this.vida <= 0 && !this.morta) {
         this.morta = true;
-        this.atacando = false; 
-        this.lina.anims.play('lina_morrendo',true);
-        this.lina.once('animationcomplete',()=>{
-        this.scene.start('Fase1');
+        this.atacando = false;
+        this.lina.setVelocity(0);
+        this.lina.anims.stop(); 
+        this.lina.anims.play('lina_morrendo', true);
+        this.lina.once('animationcomplete', () => {
+          this.scene.start('GameOver', {
+            moedasColetadas: this.moedasColetadas
+          });
         });
       }
+      
     }
   }
 
