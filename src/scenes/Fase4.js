@@ -22,6 +22,11 @@ class Fase4 extends Phaser.Scene {
     this.load.spritesheet('lina_direita','assets/Sprites/lina/andando/sprite-sheet-lina-andando-direita.png',{frameWidth:128,frameHeight:128});
     this.load.spritesheet('lina_esquerda','assets/Sprites/lina/andando-esquerda.png',{frameWidth:128,frameHeight:128});
     this.load.spritesheet('lina_morrendo','assets/Sprites/lina/morrendo/sprite-sheet-morrendo.png',{frameWidth:128,frameHeight:128});
+    this.load.spritesheet('lina_ataque_frente','assets/Sprites/lina/atacando/sprite-sheet-ataque-de-frente.png',{frameWidth:128,frameHeight:128});
+    this.load.spritesheet('lina_ataque_costas','assets/Sprites/lina/atacando/sprite-sheet-atacando-de-costas.png',{frameWidth:128,frameHeight:128});
+    this.load.spritesheet('lina_ataque_direita','assets/Sprites/lina/atacando/sprite-sheet-ataque-direita.png',{frameWidth:128,frameHeight:128});
+    this.load.spritesheet('lina_ataque_esquerda','assets/Sprites/lina/atacando/sprite-sheet-ataque-esquerda.png',{frameWidth:128,frameHeight:128});
+
   }
 
   create() {
@@ -49,11 +54,14 @@ class Fase4 extends Phaser.Scene {
   }
 
   criarAnimacoes() {
-    [['andar_frente','lina_frente'],['andar_costas','lina_costas'],['andar_direita','lina_direita'],['andar_esquerda','lina_esquerda']]
-    .forEach(([key,sprite]) => {
+    [['andar_frente','lina_frente'],['andar_costas','lina_costas'],['andar_direita','lina_direita'],['andar_esquerda','lina_esquerda']].forEach(([key,sprite]) => {
       this.anims.create({ key, frames: this.anims.generateFrameNumbers(sprite,{start:0,end:7}), frameRate:8, repeat:-1 });
     });
     this.anims.create({ key:'lina_morrendo', frames: this.anims.generateFrameNumbers('lina_morrendo',{start:0,end:5}), frameRate:8 });
+    this.anims.create({ key:'ataque_frente', frames: this.anims.generateFrameNumbers('lina_ataque_frente',{start:0,end:7}), frameRate:10 });
+    this.anims.create({ key:'ataque_costas', frames: this.anims.generateFrameNumbers('lina_ataque_costas',{start:0,end:7}), frameRate:10 });
+    this.anims.create({ key:'ataque_direita', frames: this.anims.generateFrameNumbers('lina_ataque_direita',{start:0,end:7}), frameRate:10 });
+    this.anims.create({ key:'ataque_esquerda', frames: this.anims.generateFrameNumbers('lina_ataque_esquerda',{start:0,end:7}), frameRate:10 });
   }
 
   criarControles() {
@@ -93,17 +101,24 @@ class Fase4 extends Phaser.Scene {
   }
 
   update() {
-    if (this.morta || !this.ghorn) return;
-    const spd = 200;
-    let vx=0, vy=0;
+if (this.morta) return;
+    const spd = 200; let vx=0, vy=0;
 
-    if (this.teclas.cima.isDown) { vy=-spd; this.playAnim('andar_costas'); }
-    else if (this.teclas.baixo.isDown) { vy=spd; this.playAnim('andar_frente'); }
-    else if (this.teclas.direita.isDown) { vx=spd; this.playAnim('andar_direita'); }
-    else if (this.teclas.esquerda.isDown) { vx=-spd; this.playAnim('andar_esquerda'); }
+    if (this.teclas.cima.isDown) { vy=-spd; this.playAnim('andar_costas'); this.direcao='costas'; }
+    else if (this.teclas.baixo.isDown) { vy=spd; this.playAnim('andar_frente'); this.direcao='frente'; }
+    else if (this.teclas.direita.isDown) { vx=spd; this.playAnim('andar_direita'); this.direcao='direita'; }
+    else if (this.teclas.esquerda.isDown) { vx=-spd; this.playAnim('andar_esquerda'); this.direcao='esquerda'; }
     else this.lina.anims.stop();
 
     this.lina.setVelocity(vx, vy);
+
+    if (Phaser.Input.Keyboard.JustDown(this.teclas.atacar)) {
+      const animAtk = {
+        'frente':'ataque_frente', 'costas':'ataque_costas',
+        'direita':'ataque_direita', 'esquerda':'ataque_esquerda'
+      }[this.direcao || 'frente'];
+      this.lina.play(animAtk);
+      this.time.delayedCall(400, ()=> this.playAnim('andar_frente'));
 
     if (Phaser.Input.Keyboard.JustDown(this.teclas.atacar)) {
       if (Phaser.Math.Distance.Between(this.lina.x,this.lina.y,this.ghorn.x,this.ghorn.y)<100) {
@@ -126,6 +141,7 @@ class Fase4 extends Phaser.Scene {
         }
       }
     }
+  }
 
     const dist = Phaser.Math.Distance.Between(this.lina.x,this.lina.y,this.ghorn.x,this.ghorn.y);
     if (dist > 20) {
@@ -139,13 +155,15 @@ class Fase4 extends Phaser.Scene {
     this.ghorn.barraVida.fillStyle(0x000000).fillRect(this.ghorn.x-40,this.ghorn.y-this.ghorn.displayHeight/2-20,80,10);
     this.ghorn.barraVida.fillStyle(0xff0000).fillRect(this.ghorn.x-39,this.ghorn.y-this.ghorn.displayHeight/2-19,78*p,8);
 
-    if (dist < 80 && this.vida > 0) {
-      this.vida -= this.temEscudo ? 0 : 0.2;
+    if (dist<60 && this.vida>0) {
+      this.vida -= this.temEscudo?0:0.1;
       this.atualizarHUD();
-      if (this.vida <= 0) {
+      if (this.vida<=0) {
         this.morta = true;
-        this.lina.anims.play('lina_morrendo', true);
-        this.lina.once('animationcomplete', () => this.scene.restart());
+        this.lina.anims.play('lina_morrendo',true);
+        this.lina.once('animationcomplete',()=>{
+        this.scene.start('Fase1');
+        });
       }
     }
   }
