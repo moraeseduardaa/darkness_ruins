@@ -10,6 +10,7 @@ class Instrucoes extends Phaser.Scene {
     this.load.image('andar', 'assets/Personagens/andar.png');
     this.load.image('space', 'assets/Personagens/space.png');
     this.load.image('teclaC', 'assets/Personagens/teclaC.png');
+    this.load.image('npccontrole', 'assets/Personagens/npccontrole.png');
   }
 
   create() {
@@ -23,6 +24,12 @@ class Instrucoes extends Phaser.Scene {
       .setScale(0.3)
       .setDepth(1)
       .setOrigin(0.5);
+
+     this.add.image(width / 3.2, height * 0.15, 'npccontrole')
+      .setScale(0.15)
+      .setDepth(1)
+      .setOrigin(0.5);
+
 
     // Imagem ANDAR com explicação
     this.add.image(width * 0.25, height * 0.56, 'andar')
