@@ -26,13 +26,14 @@ class Fase3 extends Phaser.Scene {
     this.load.spritesheet('lina_ataque_costas','assets/Sprites/lina/atacando/sprite-sheet-atacando-de-costas.png',{frameWidth:128,frameHeight:128});
     this.load.spritesheet('lina_ataque_direita','assets/Sprites/lina/atacando/sprite-sheet-ataque-direita.png',{frameWidth:128,frameHeight:128});
     this.load.spritesheet('lina_ataque_esquerda','assets/Sprites/lina/atacando/sprite-sheet-ataque-esquerda.png',{frameWidth:128,frameHeight:128});
-
+    this.load.audio('som_faca', 'assets/audio/som_faca.mp3');
   }
 
   create() {
     this.add.image(0,0,'mapa_fase3').setOrigin(0).setDisplaySize(1920,1920);
     this.physics.world.setBounds(0,0,1920,1920);
     this.cameras.main.setBounds(0,0,1920,1920);
+    this.somFaca = this.sound.add('som_faca', { volume: 0.2 }); 
 
     this.lina = this.physics.add.sprite(960,960,'lina_frente').setScale(0.8).setCollideWorldBounds(true);
     this.cameras.main.startFollow(this.lina);
@@ -145,7 +146,9 @@ class Fase3 extends Phaser.Scene {
     this.lina.setVelocity(vx, vy);
 
     if (Phaser.Input.Keyboard.JustDown(this.teclas.atacar) && !this.atacando && !this.morta) {
-      this.atacando = true;      const animAtk = {
+      this.atacando = true;   
+      this.somFaca.play();
+         const animAtk = {
         'frente':'ataque_frente', 'costas':'ataque_costas',
         'direita':'ataque_direita', 'esquerda':'ataque_esquerda'
       }[this.direcao || 'frente'];

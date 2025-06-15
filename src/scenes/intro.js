@@ -18,9 +18,14 @@ class Intro extends Phaser.Scene {
     this.load.audio('thorn5', 'assets/audio/thorn5.mp3');
     this.load.audio('lina6', 'assets/audio/lina6.mp3');
     this.load.audio('thorn7', 'assets/audio/thorn7.mp3');
+    this.load.audio('musica_entrada', 'assets/audio/musica_entrada.mp3');
+
   }
 
   create() {
+    this.musicaEntrada = this.sound.add('musica_entrada', { loop: true, volume: 0.07 });
+    this.musicaEntrada.play();
+
     const larguraTela = this.sys.game.config.width;
     const alturaTela = this.sys.game.config.height;
 
@@ -83,6 +88,7 @@ class Intro extends Phaser.Scene {
       if (this.falaAtual >= this.dialogo.length) {
         this.cameras.main.fadeOut(1500, 0, 0, 0);
         this.cameras.main.once('camerafadeoutcomplete', () => {
+          this.musicaEntrada.stop();
           this.scene.start('Fase1');
         });
       } else {

@@ -7,6 +7,8 @@ class GameOver extends Phaser.Scene {
 
   preload() {
     this.load.image('gameover_reiniciar', '/assets/Creditos/gameover_reiniciar.png'); 
+    this.load.audio('musica_gameover', 'assets/audio/musica_gameover.mp3');
+
   }
 
   create() {
@@ -32,6 +34,9 @@ class GameOver extends Phaser.Scene {
     botao.on('pointerout', () => {
       botao.setFillStyle(0x000000, 0);
     });
+
+    this.sound.add('musica_gameover', { loop: false, volume: 0.6 }).play();
+
   }
 }
 
