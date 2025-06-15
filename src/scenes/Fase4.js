@@ -6,7 +6,7 @@ class Fase4 extends Phaser.Scene {
   }
 
   init(data) {
-    this.vida = data.vida || 100;
+    this.vida = 100; 
     this.danoExtra = data.danoExtra || 0;
     this.temEscudo = data.temEscudo || false;
     this.moedasColetadas = data.moedasColetadas || 0;

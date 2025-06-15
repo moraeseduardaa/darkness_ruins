@@ -6,7 +6,7 @@ class Fase3 extends Phaser.Scene {
   }
 
   init(data) {
-    this.vida = data.vida || 100;
+    this.vida = 100; 
     this.danoExtra = data.danoExtra || 0;
     this.temEscudo = data.temEscudo || false;
     this.moedasColetadas = data.moedasColetadas || 0;
@@ -76,13 +76,12 @@ class Fase3 extends Phaser.Scene {
         .setScale(0.06)
         .setScrollFactor(0)
     );
-    this.moedasColetadas = 0;
     const centroX = this.scale.width / 2;
     this.iconeMoeda = this.add.image(centroX, 28, 'moeda')
       .setScale(0.05)
       .setScrollFactor(0)
       .setOrigin(1, 0.5);
-    this.textoMoedas = this.add.text(centroX, 28, '0', {
+    this.textoMoedas = this.add.text(centroX, 28, `${this.moedasColetadas}`, {
       fontSize: '26px',
       fontFamily: 'Georgia',
       color: '#ffffff'
@@ -98,8 +97,6 @@ class Fase3 extends Phaser.Scene {
       [200, 200],     [1700, 200],   [200, 1700],    [1700, 1700],  [960, 960],
       [500, 1000],   [1400, 1000],  [960, 400],     [960, 1500],   [300, 300],
       [400, 600],    [600, 400],    [1500, 400],    [400, 1500],   [1500, 1500],
-      [800, 300],    [300, 800],    [1600, 300],    [300, 1600],   [1600, 1600],
-      [1200, 300],   [300, 1200],   [1600, 1200],   [1200, 1600],
     ];
     
     posicoes.forEach(([x, y]) => {

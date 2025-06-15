@@ -6,7 +6,7 @@ class Fase2 extends Phaser.Scene {
   }
 
   init(data) {
-    this.vida = data.vida || 100;
+    this.vida = 100; 
     this.danoExtra = data.danoExtra || 0;
     this.temEscudo = data.temEscudo || false;
     this.moedasColetadas = data.moedasColetadas || 0;
@@ -76,13 +76,12 @@ class Fase2 extends Phaser.Scene {
         .setScale(0.06)
         .setScrollFactor(0)
     );
-    this.moedasColetadas = 0;
     const centroX = this.scale.width / 2;
     this.iconeMoeda = this.add.image(centroX, 28, 'moeda')
       .setScale(0.05)
       .setScrollFactor(0)
       .setOrigin(1, 0.5);
-    this.textoMoedas = this.add.text(centroX, 28, '0', {
+    this.textoMoedas = this.add.text(centroX, 28, `${this.moedasColetadas}`, {
       fontSize: '26px',
       fontFamily: 'Georgia',
       color: '#ffffff'
@@ -201,7 +200,7 @@ update() {
       });
     }
   }
-});
+  });
 
     if (this.ogros.countActive() === 0 && !this.transicaoFeita) {
       this.transicaoFeita = true;
