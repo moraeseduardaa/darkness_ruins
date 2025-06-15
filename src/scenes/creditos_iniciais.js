@@ -9,9 +9,15 @@ class CreditosIniciais extends Phaser.Scene {
     this.load.image('capa', '/assets/Creditos/capa_darkness.png');
     this.load.image('botao_play', '/assets/Creditos/play1.png');
     this.load.image('botao_instrucoes', '/assets/Creditos/instrucoes.png');
+    this.load.audio('musica_entrada', 'assets/audio/musica_entrada.mp3');
+
   }
 
   create() {
+  if (!this.sound.get('musica_entrada')) {
+  const musica = this.sound.add('musica_entrada', { loop: true, volume: 0.07 });
+  musica.play();
+}
     const { width, height } = this.sys.game.canvas;
 
     const capa = this.add.image(width / 2, height / 2, 'capa');
