@@ -114,7 +114,7 @@ class Fase4 extends Phaser.Scene {
 
   criarVilao() {
     this.vilao = this.physics.add.sprite(960, 400, 'ghorn').setScale(0.2);
-    this.vilao.vida = 100;
+    this.vilao.vida = 125;
     this.vilao.barraVida = this.add.graphics().setDepth(1);
     this.vilao.morrendo = false;
   }
@@ -175,7 +175,8 @@ class Fase4 extends Phaser.Scene {
       this.vilao.barraVida.fillStyle(0xff0000).fillRect(this.vilao.x - 29, this.vilao.y - this.vilao.displayHeight / 2 - 14, 58 * p, 6);
 
       if (dist < 100 && this.vida > 0) {
-        const danoRecebido = this.temEscudo ? 0.07 : 0.1;
+        const danoRecebido = this.temEscudo ? 0.15 : 0.25;
+
         this.vida -= danoRecebido;
         this.atualizarHUD();
         if (this.vida <= 0 && !this.morta) {
