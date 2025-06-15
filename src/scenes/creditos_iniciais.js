@@ -24,7 +24,6 @@ class CreditosIniciais extends Phaser.Scene {
     const botaoPlayY = height - 300;
     const botaoInstrucoesY = botaoPlayY + espacamento;
 
-    // --- Botão PLAY ---
     const botaoPlay = this.add.image(width / 2, botaoPlayY, 'botao_play').setScale(escalaNormal);
 
     const larguraPlay = botaoPlay.width * escalaNormal;
@@ -34,11 +33,10 @@ class CreditosIniciais extends Phaser.Scene {
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
 
-    areaPlay.on('pointerdown', () => this.scene.start('Fase1')); //trocar por intro
+    areaPlay.on('pointerdown', () => this.scene.start('Intro')); 
     areaPlay.on('pointerover', () => botaoPlay.setScale(escalaHover));
     areaPlay.on('pointerout', () => botaoPlay.setScale(escalaNormal));
-
-    // --- Botão INSTRUÇÕES ---
+       
     const botaoInstrucoes = this.add.image(width / 2, botaoInstrucoesY, 'botao_instrucoes').setScale(escalaNormal);
 
     const larguraInstrucoes = botaoInstrucoes.width * escalaNormal;

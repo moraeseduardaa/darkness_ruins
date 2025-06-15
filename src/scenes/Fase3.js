@@ -70,26 +70,36 @@ class Fase3 extends Phaser.Scene {
   }
 
   criarHUD() {
-    const padding = 20;
-    this.coracoes = [...Array(5)].map((_,i)=>this.add.image(padding+i*45,padding,'coracoes').setScale(0.06).setScrollFactor(0));
-    this.textoMoedas = this.add.text(800, 20, `🪙 ${this.moedasColetadas}`, {fontSize:'22px',color:'#fff'}).setScrollFactor(0);
-    this.atualizarHUD();
+     const padding = 20;
+    this.coracoes = [...Array(5)].map((_, i) =>
+      this.add.image(padding + i * 45, padding, 'coracoes')
+        .setScale(0.06)
+        .setScrollFactor(0)
+    );
+    this.moedasColetadas = 0;
+    const centroX = this.scale.width / 2;
+    this.iconeMoeda = this.add.image(centroX, 28, 'moeda')
+      .setScale(0.05)
+      .setScrollFactor(0)
+      .setOrigin(1, 0.5);
+    this.textoMoedas = this.add.text(centroX, 28, '0', {
+      fontSize: '26px',
+      fontFamily: 'Georgia',
+      color: '#ffffff'
+    })
+      .setOrigin(0, 0.5)
+      .setScrollFactor(0);
   }
 
   criarMoedas() {
     this.moedas = this.physics.add.group();
   
     const posicoes = [
-      [200, 200],     
-      [1700, 200],   
-      [200, 1700],    
-      [1700, 1700],  
-      [960, 960],  
-      [500, 1000],   
-      [1400, 1000], 
-      [960, 400], 
-      [960, 1500],
-      [300, 300]      
+      [200, 200],     [1700, 200],   [200, 1700],    [1700, 1700],  [960, 960],
+      [500, 1000],   [1400, 1000],  [960, 400],     [960, 1500],   [300, 300],
+      [400, 600],    [600, 400],    [1500, 400],    [400, 1500],   [1500, 1500],
+      [800, 300],    [300, 800],    [1600, 300],    [300, 1600],   [1600, 1600],
+      [1200, 300],   [300, 1200],   [1600, 1200],   [1200, 1600],
     ];
     
     posicoes.forEach(([x, y]) => {
@@ -104,7 +114,7 @@ class Fase3 extends Phaser.Scene {
     });
   }
   atualizarHUD() {
-    this.textoMoedas.setText(`🪙 ${this.moedasColetadas}`);
+    this.textoMoedas.setText(`${this.moedasColetadas}`);
     const visiveis = Math.ceil(this.vida / 20);
     this.coracoes.forEach((c, i) => c.setVisible(i < visiveis));
   }
@@ -166,22 +176,23 @@ class Fase3 extends Phaser.Scene {
       ogro.barraVida.fillStyle(0x000000).fillRect(ogro.x-30,ogro.y-ogro.displayHeight/2-15,60,8);
       ogro.barraVida.fillStyle(0xff0000).fillRect(ogro.x-29,ogro.y-ogro.displayHeight/2-14,58*p,6);
 
-      if (dist<70 && this.vida>0) {
-      this.vida -= this.temEscudo?0:0.1;
-      this.atualizarHUD();
-      if (this.vida <= 0 && !this.morta) {
-        this.morta = true;
-        this.atacando = false;
-        this.lina.setVelocity(0);
-        this.lina.anims.stop(); 
-        this.lina.anims.play('lina_morrendo', true);
-        this.lina.once('animationcomplete', () => {
-          this.scene.start('GameOver', {
-            moedasColetadas: this.moedasColetadas
+      if (dist < 70 && this.vida > 0) {
+        const danoRecebido = this.temEscudo ? 0.06 : 0.1;
+        this.vida -= danoRecebido;
+        this.atualizarHUD();
+
+        if (this.vida <= 0 && !this.morta) {
+          this.morta = true;
+          this.atacando = false;
+          this.lina.setVelocity(0);
+          this.lina.anims.stop(); 
+          this.lina.anims.play('lina_morrendo', true);
+          this.lina.once('animationcomplete', () => {
+            this.scene.start('GameOver', {
+              moedasColetadas: this.moedasColetadas
+            });
           });
-        });
-      }
-      
+        }
       }
     });
 

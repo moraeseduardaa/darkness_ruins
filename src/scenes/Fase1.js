@@ -6,34 +6,68 @@ class LojaScene extends Phaser.Scene {
 
   create() {
     const { width, height } = this.scale;
-    this.add.rectangle(width/2, height/2, width*0.6, height*0.6, 0x222222, 0.6).setStrokeStyle(4, 0xffffff).setDepth(1);
-    this.add.text(width/2, height/2-150, '🛒 LOJA', { fontSize: '32px', fontFamily: 'Arial', color: '#fff' }).setOrigin(0.5).setDepth(2);
-    this.aviso = this.add.text(width/2, height/2+150, '', { fontSize: '18px', color: '#ff5555' }).setOrigin(0.5).setDepth(3);
-
-    this.criarBotao(height/2-40, '+1 Vida (2 moedas)', 2, () => { this.parent.vida = Math.min(this.parent.vida+20, 100); });
-    this.criarBotao(height/2+20, 'Escudo (1 moedas)', 1, () => { this.parent.temEscudo = true; });
-    this.criarBotao(height/2+80, '+Dano (3 moedas)', 3, () => { this.parent.danoExtra += 5; });
-
-    this.input.keyboard.on('keydown-C', () => this.fecharLoja());
-  }
-
-  criarBotao(y, texto, custo, efeito) {
-    const botao = this.add.text(this.scale.width/2, y, texto, { fontSize: '18px', backgroundColor: '#333', color: '#fff', padding:{x:20,y:10} }).setOrigin(0.5).setInteractive().setDepth(2);
-    botao.on('pointerdown', () => {
-      if (this.parent.moedasColetadas >= custo) {
-        efeito(); this.parent.moedasColetadas -= custo;
-        this.parent.atualizarHUD();
-        this.fecharLoja();
-      } else {
-        this.aviso.setText('Moedas insuficientes!');
-        this.time.delayedCall(1500, ()=>this.aviso.setText(''));
-      }
-    });
-  }
-
-  fecharLoja() { this.scene.stop(); this.parent.scene.resume(); }
+    this.add.rectangle(width / 2, height / 2, width * 0.6, height * 0.6, 0x000000, 0.4)
+    .setStrokeStyle(3, 0xf1e4c2)
+    .setDepth(1);
+    this.add.text(width / 2, height / 2 - 130, '📜 LOJA DE PODERES 📜', {
+    fontSize: '30px',
+    fontFamily: 'Georgia',
+    color: '#f1e4c2',
+    stroke: '#4a3b60',
+    strokeThickness: 2,
+    shadow: { blur: 3, color: '#000', offsetX: 1, offsetY: 1 }
+  }).setOrigin(0.5).setDepth(2);
+  this.aviso = this.add.text(width / 2, height / 2 + 160, '', {
+    fontSize: '18px',
+    fontFamily: 'Verdana',
+    color: '#ff5555'
+  }).setOrigin(0.5).setDepth(3);
+  this.criarBotao(height / 2 - 30, '❤️ +1 Vida (2 moedas)', 2, () => {
+    this.parent.vida = Math.min(this.parent.vida + 20, 100);
+  });
+  this.criarBotao(height / 2 + 30, '🛡️ Escudo (1 moeda)', 1, () => {
+    this.parent.temEscudo = true;
+  });
+  this.criarBotao(height / 2 + 90, '🗡️ +Dano (3 moedas)', 3, () => {
+    this.parent.danoExtra += 3;
+  });
+  this.input.keyboard.on('keydown-C', () => this.fecharLoja());
 }
 
+ criarBotao(y, texto, custo, efeito) {
+  const botao = this.add.text(this.scale.width / 2, y, texto, {
+    fontSize: '20px',
+    fontFamily: 'Georgia',
+    backgroundColor: '#4c2a57', 
+    color: '#ffffff',
+    padding: { x: 25, y: 10 },
+    align: 'center'
+  })
+    .setOrigin(0.5)
+    .setInteractive()
+    .setDepth(2);
+  botao.on('pointerover', () => {
+    botao.setStyle({ backgroundColor: '#7e4a90' }); 
+    botao.setShadow(2, 2, '#ffd700', 4, true, true);
+  });
+  botao.on('pointerout', () => {
+    botao.setStyle({ backgroundColor: '#4c2a57' }); 
+    botao.setShadow(0, 0, '', 0); 
+  });
+  botao.on('pointerdown', () => {
+    if (this.parent.moedasColetadas >= custo) {
+      efeito();
+      this.parent.moedasColetadas -= custo;
+      this.parent.atualizarHUD();
+      this.fecharLoja();
+    } else {
+      this.aviso.setText('⚠️ Moedas insuficientes!');
+      this.time.delayedCall(1500, () => this.aviso.setText(''));
+    }
+  });
+}
+ fecharLoja() { this.scene.stop(); this.parent.scene.resume(); }
+}
 class Fase1 extends Phaser.Scene {
   constructor() { super('Fase1'); }
 
@@ -101,9 +135,24 @@ class Fase1 extends Phaser.Scene {
 
   criarHUD() {
     const padding = 20;
-    this.coracoes = [...Array(5)].map((_,i)=>this.add.image(padding+i*45,padding,'coracoes').setScale(0.06).setScrollFactor(0));
-    this.textoMoedas = this.add.text(800, 20, `🪙 0`, {fontSize:'22px',color:'#fff'}).setScrollFactor(0);
+    this.coracoes = [...Array(5)].map((_, i) =>
+      this.add.image(padding + i * 45, padding, 'coracoes')
+        .setScale(0.06)
+        .setScrollFactor(0)
+    );
     this.moedasColetadas = 0;
+    const centroX = this.scale.width / 2;
+    this.iconeMoeda = this.add.image(centroX, 28, 'moeda')
+      .setScale(0.05)
+      .setScrollFactor(0)
+      .setOrigin(1, 0.5);
+    this.textoMoedas = this.add.text(centroX, 28, '0', {
+      fontSize: '26px',
+      fontFamily: 'Georgia',
+      color: '#ffffff'
+    })
+      .setOrigin(0, 0.5)
+      .setScrollFactor(0);
   }
 
   criarMoedas() {
@@ -135,9 +184,9 @@ class Fase1 extends Phaser.Scene {
   }
 
   atualizarHUD() {
-    this.textoMoedas.setText(`🪙 ${this.moedasColetadas}`);
-    const visiveis = Math.ceil(this.vida/20);
-    this.coracoes.forEach((c,i)=>c.setVisible(i<visiveis));
+    this.textoMoedas.setText(`${this.moedasColetadas}`);
+    const visiveis = Math.ceil(this.vida / 20);
+    this.coracoes.forEach((c, i) => c.setVisible(i < visiveis));
   }
 
   criarOgros() {
@@ -204,9 +253,11 @@ class Fase1 extends Phaser.Scene {
       ogro.barraVida.fillStyle(0x000000).fillRect(ogro.x-30,ogro.y-ogro.displayHeight/2-15,60,8);
       ogro.barraVida.fillStyle(0xff0000).fillRect(ogro.x-29,ogro.y-ogro.displayHeight/2-14,58*p,6);
 
-      if (dist<50 && this.vida>0) {
-        this.vida -= this.temEscudo?0:0.1;
+      if (dist < 50 && this.vida > 0) {
+        const danoRecebido = this.temEscudo ? 0.06 : 0.1;
+        this.vida -= danoRecebido;
         this.atualizarHUD();
+
         if (this.vida <= 0 && !this.morta) {
           this.morta = true;
           this.atacando = false;
@@ -219,8 +270,8 @@ class Fase1 extends Phaser.Scene {
             });
           });
         }
-        
       }
+
     });
 
     if (this.totalOgrosGerados === this.maxOgros && this.ogros.countActive() === 0 && !this.transicaoFeita) {

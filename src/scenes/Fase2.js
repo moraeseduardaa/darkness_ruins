@@ -70,10 +70,25 @@ class Fase2 extends Phaser.Scene {
   }
 
   criarHUD() {
-    const padding = 20;
-    this.coracoes = [...Array(5)].map((_,i)=>this.add.image(padding+i*45,padding,'coracoes').setScale(0.06).setScrollFactor(0));
-    this.textoMoedas = this.add.text(800, 20, `🪙 ${this.moedasColetadas}`, {fontSize:'22px',color:'#fff'}).setScrollFactor(0);
-    this.atualizarHUD(); 
+     const padding = 20;
+    this.coracoes = [...Array(5)].map((_, i) =>
+      this.add.image(padding + i * 45, padding, 'coracoes')
+        .setScale(0.06)
+        .setScrollFactor(0)
+    );
+    this.moedasColetadas = 0;
+    const centroX = this.scale.width / 2;
+    this.iconeMoeda = this.add.image(centroX, 28, 'moeda')
+      .setScale(0.05)
+      .setScrollFactor(0)
+      .setOrigin(1, 0.5);
+    this.textoMoedas = this.add.text(centroX, 28, '0', {
+      fontSize: '26px',
+      fontFamily: 'Georgia',
+      color: '#ffffff'
+    })
+      .setOrigin(0, 0.5)
+      .setScrollFactor(0); 
   }
 
   criarMoedas() {
@@ -105,7 +120,7 @@ class Fase2 extends Phaser.Scene {
   }
 
   atualizarHUD() {
-    this.textoMoedas.setText(`🪙 ${this.moedasColetadas}`);
+    this.textoMoedas.setText(`${this.moedasColetadas}`);
     const visiveis = Math.ceil(this.vida / 20);
     this.coracoes.forEach((c, i) => c.setVisible(i < visiveis));
   }
@@ -168,24 +183,25 @@ update() {
       ogro.barraVida.fillStyle(0x000000).fillRect(ogro.x-30,ogro.y-ogro.displayHeight/2-15,60,8);
       ogro.barraVida.fillStyle(0xff0000).fillRect(ogro.x-29,ogro.y-ogro.displayHeight/2-14,58*p,6);
 
-      if (dist<60 && this.vida>0) {
-      this.vida -= this.temEscudo?0:0.1;
+    if (dist < 60 && this.vida > 0) {
+      const danoRecebido = this.temEscudo ? 0.06 : 0.1;
+      this.vida -= danoRecebido;
       this.atualizarHUD();
-      if (this.vida <= 0 && !this.morta) {
-        this.morta = true;
-        this.atacando = false;
+
+    if (this.vida <= 0 && !this.morta) {
+      this.morta = true;
+      this.atacando = false;
         this.lina.setVelocity(0);
         this.lina.anims.stop(); 
         this.lina.anims.play('lina_morrendo', true);
         this.lina.once('animationcomplete', () => {
-          this.scene.start('GameOver', {
-            moedasColetadas: this.moedasColetadas
-          });
+        this.scene.start('GameOver', {
+        moedasColetadas: this.moedasColetadas
         });
-      }
-      
-      }
-    });
+      });
+    }
+  }
+});
 
     if (this.ogros.countActive() === 0 && !this.transicaoFeita) {
       this.transicaoFeita = true;
