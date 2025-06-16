@@ -1,7 +1,7 @@
 Darkness Ruins
 Bem-vinde ao Darkness Ruins, um jogo 2D feito com Phaser onde você controla Lina em sua jornada épica contra criaturas sombrias. Prepare-se para explorar fases desafiadoras, derrotar ogros e o vilão Ghorn, coletar moedas e desbloquear poderes para sobreviver!
 
-🔗 Jogue agora: https://darkness-ruins.vercel.app
+🔗 Jogue agora: https://darknessruins.vercel.app/
 
 🕹️ Instruções de Uso
 Como Jogar:
