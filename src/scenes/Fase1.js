@@ -172,7 +172,7 @@ class Fase1 extends Phaser.Scene {
       [1700, 200],   
       [200, 1700],    
       [1700, 1700],  
-      [960, 960],  
+      //[960, 960],  
       [500, 1000],   
       [1400, 1000], 
       [960, 400], 
@@ -264,7 +264,7 @@ class Fase1 extends Phaser.Scene {
       ogro.barraVida.fillStyle(0xff0000).fillRect(ogro.x-29,ogro.y-ogro.displayHeight/2-14,58*p,6);
 
       if (dist < 50 && this.vida > 0) {
-        const danoRecebido = this.temEscudo ? 0.06 : 0.1;
+        const danoRecebido = this.temEscudo ? 0.05 : 0.1;
         this.vida -= danoRecebido;
         this.atualizarHUD();
 

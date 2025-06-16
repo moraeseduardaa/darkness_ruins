@@ -92,7 +92,7 @@ class Fase4 extends Phaser.Scene {
   criarMoedas() {
     this.moedas = this.physics.add.group();
     const posicoes = [
-      [200, 200], [400, 400], [600, 600], [800, 800], [960, 960],
+      [200, 200], [400, 400], [600, 600], [800, 800], //[960, 960],
       [1200, 1200], [1600, 1600], [300, 1500], [1700, 300], [1800, 1800]
     ];
     posicoes.forEach(([x, y]) => {
@@ -175,7 +175,7 @@ class Fase4 extends Phaser.Scene {
       this.vilao.barraVida.fillStyle(0xff0000).fillRect(this.vilao.x - 29, this.vilao.y - this.vilao.displayHeight / 2 - 14, 58 * p, 6);
 
       if (dist < 100 && this.vida > 0) {
-        const danoRecebido = this.temEscudo ? 0.12 : 0.2;
+        const danoRecebido = this.temEscudo ? 0.20 : 0.35;
 
 
         this.vida -= danoRecebido;
